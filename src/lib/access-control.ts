@@ -9,6 +9,10 @@ export const APP_ROUTES: AppRoute[] = [
   { path: "/inicio", modulo: "PAINEL" },
   { path: "/empresas", modulo: "EMPRESAS" },
   { path: "/tarefas", modulo: "TAREFAS" },
+  { path: "/usuarios", modulo: "USUARIOS" },
+  { path: "/setores", modulo: "CONFIGURACOES" },
+  { path: "/permissoes", modulo: "CONFIGURACOES" },
+  { path: "/auditoria", modulo: "AUDITORIA" },
 ];
 
 export function canReadModule(me: MeResponse, modulo: Modulo): boolean {

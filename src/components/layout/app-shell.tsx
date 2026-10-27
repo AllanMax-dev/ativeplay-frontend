@@ -7,10 +7,12 @@ import {
   Building2,
   CheckSquare2,
   FileText,
+  History,
   House,
+  Layers3,
   LogOut,
   Menu,
-  Settings,
+  ShieldCheck,
   Users,
   X,
 } from "lucide-react";
@@ -37,8 +39,10 @@ const OPERATION_NAVIGATION: NavigationItem[] = [
   { label: "CRM", icon: BriefcaseBusiness, modulo: "CRM" },
   { label: "Documentos", icon: FileText, modulo: "DOCUMENTOS" },
   { label: "Relatórios", icon: BarChart3, modulo: "RELATORIOS" },
-  { label: "Usuários", icon: Users, modulo: "USUARIOS" },
-  { label: "Configurações", icon: Settings, modulo: "CONFIGURACOES" },
+  { label: "Usuários", href: "/usuarios", icon: Users, modulo: "USUARIOS" },
+  { label: "Setores", href: "/setores", icon: Layers3, modulo: "CONFIGURACOES" },
+  { label: "Permissões", href: "/permissoes", icon: ShieldCheck, modulo: "CONFIGURACOES" },
+  { label: "Auditoria", href: "/auditoria", icon: History, modulo: "AUDITORIA" },
 ];
 
 const PROFILE_LABELS: Record<Perfil, string> = {

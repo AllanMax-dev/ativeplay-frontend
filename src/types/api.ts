@@ -1,5 +1,24 @@
 export type Perfil = "ADMIN" | "GESTOR" | "OPERADOR" | "CLIENTE";
 
+export type Modulo =
+  | "PAINEL"
+  | "EMPRESAS"
+  | "TAREFAS"
+  | "CRM"
+  | "DOCUMENTOS"
+  | "RELATORIOS"
+  | "INTEGRACOES"
+  | "USUARIOS"
+  | "CONFIGURACOES"
+  | "AUDITORIA";
+
+export interface Pagina<T> {
+  dados: T[];
+  total: number;
+  pagina: number;
+  porPagina: number;
+}
+
 export interface ProblemDetail {
   status: number;
   detail: string;
@@ -47,7 +66,7 @@ export interface SetorResumo {
 }
 
 export interface PermissaoResumo {
-  modulo: string;
+  modulo: Modulo;
   escrita: boolean;
 }
 

@@ -20,38 +20,26 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { Perfil } from "@/types/api";
+import { canReadModule } from "@/lib/access-control";
+import type { Modulo, Perfil } from "@/types/api";
 
 interface NavigationItem {
   label: string;
   href?: string;
   icon: LucideIcon;
+  modulo?: Modulo;
 }
 
-const NAVIGATION: Record<Perfil, NavigationItem[]> = {
-  ADMIN: [
-    { label: "Visão geral", href: "/inicio", icon: House },
-    { label: "Usuários", icon: Users },
-    { label: "Empresas", icon: Building2 },
-    { label: "Tarefas", icon: CheckSquare2 },
-    { label: "CRM", icon: BriefcaseBusiness },
-    { label: "Configurações", icon: Settings },
-  ],
-  GESTOR: [
-    { label: "Visão geral", href: "/inicio", icon: House },
-    { label: "Empresas", icon: Building2 },
-    { label: "Tarefas", icon: CheckSquare2 },
-    { label: "CRM", icon: BriefcaseBusiness },
-    { label: "Relatórios", icon: BarChart3 },
-  ],
-  OPERADOR: [
-    { label: "Minha rotina", href: "/inicio", icon: House },
-    { label: "Minhas empresas", icon: Building2 },
-    { label: "Tarefas", icon: CheckSquare2 },
-    { label: "Documentos", icon: FileText },
-  ],
-  CLIENTE: [{ label: "Portal", href: "/portal", icon: House }],
-};
+const OPERATION_NAVIGATION: NavigationItem[] = [
+  { label: "Painel", href: "/inicio", icon: House, modulo: "PAINEL" },
+  { label: "Empresas", href: "/empresas", icon: Building2, modulo: "EMPRESAS" },
+  { label: "Tarefas", href: "/tarefas", icon: CheckSquare2, modulo: "TAREFAS" },
+  { label: "CRM", icon: BriefcaseBusiness, modulo: "CRM" },
+  { label: "Documentos", icon: FileText, modulo: "DOCUMENTOS" },
+  { label: "Relatórios", icon: BarChart3, modulo: "RELATORIOS" },
+  { label: "Usuários", icon: Users, modulo: "USUARIOS" },
+  { label: "Configurações", icon: Settings, modulo: "CONFIGURACOES" },
+];
 
 const PROFILE_LABELS: Record<Perfil, string> = {
   ADMIN: "Administrador",
@@ -78,6 +66,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { me } = useAuth();
   if (!me) return null;
+  const navigation =
+    me.perfil === "CLIENTE"
+      ? [{ label: "Portal", href: "/portal", icon: House }]
+      : OPERATION_NAVIGATION.filter(
+          (item) => item.modulo && canReadModule(me, item.modulo),
+        );
 
   return (
     <div className="flex h-full flex-col">
@@ -86,7 +80,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
       <Separator className="bg-sidebar-border" />
       <nav className="flex-1 space-y-1 px-3 py-5" aria-label="Menu principal">
-        {NAVIGATION[me.perfil].map((item) => {
+        {navigation.map((item) => {
           const Icon = item.icon;
           const active = item.href === pathname;
           if (!item.href) {

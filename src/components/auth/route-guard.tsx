@@ -4,27 +4,26 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function defaultRoute(isClient: boolean): string {
-  return isClient ? "/portal" : "/inicio";
-}
+import {
+  canAccessPath,
+  defaultAuthenticatedRoute,
+} from "@/lib/access-control";
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { status, me } = useAuth();
-  const isClient = me?.perfil === "CLIENTE";
-  const isAllowed = isClient ? pathname === "/portal" : pathname === "/inicio";
+  const isAllowed = me ? canAccessPath(me, pathname) : false;
 
   useEffect(() => {
     if (status === "anonymous") {
       router.replace("/login");
       return;
     }
-    if (status === "authenticated" && !isAllowed) {
-      router.replace(defaultRoute(isClient));
+    if (status === "authenticated" && me && !isAllowed) {
+      router.replace(defaultAuthenticatedRoute(me));
     }
-  }, [status, isAllowed, isClient, router]);
+  }, [status, me, isAllowed, router]);
 
   if (status === "loading" || status === "anonymous" || !isAllowed) {
     return (

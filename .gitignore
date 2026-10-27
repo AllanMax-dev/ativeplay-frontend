@@ -1,1 +1,5 @@
 .maestri/
+.next/
+node_modules/
+.env*.local
+npm-debug.log*

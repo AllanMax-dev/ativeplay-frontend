@@ -43,6 +43,33 @@ interface RequestOptions<TBody> {
   retryOnUnauthorized?: boolean;
 }
 
+type QueryValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | readonly (string | number | boolean)[];
+
+export function withQuery(
+  path: string,
+  params: Record<string, QueryValue>,
+): string {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === null || value === undefined || value === "") return;
+    if (Array.isArray(value)) {
+      value.forEach((item) => query.append(key, String(item)));
+      return;
+    }
+    query.set(key, String(value));
+  });
+
+  const suffix = query.toString();
+  return suffix ? `${path}?${suffix}` : path;
+}
+
 let refreshPromise: Promise<SessaoResponse> | null = null;
 
 async function readProblem(response: Response): Promise<ProblemDetail> {
@@ -146,8 +173,20 @@ export const api = {
     return request<TResponse>(path);
   },
 
-  post<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
+  post<TResponse, TBody = undefined>(path: string, body?: TBody): Promise<TResponse> {
     return request<TResponse, TBody>(path, { method: "POST", body });
+  },
+
+  put<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
+    return request<TResponse, TBody>(path, { method: "PUT", body });
+  },
+
+  patch<TResponse, TBody>(path: string, body: TBody): Promise<TResponse> {
+    return request<TResponse, TBody>(path, { method: "PATCH", body });
+  },
+
+  delete<TResponse = void>(path: string): Promise<TResponse> {
+    return request<TResponse>(path, { method: "DELETE" });
   },
 
   login(credentials: LoginRequest): Promise<SessaoResponse> {

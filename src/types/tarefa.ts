@@ -7,6 +7,52 @@ export type StatusOcorrencia =
 
 export type Prioridade = "BAIXA" | "MEDIA" | "ALTA" | "URGENTE";
 
+export type Recorrencia = "DIARIA" | "SEMANAL" | "MENSAL" | "UNICA";
+
+export interface RegraTarefaRequest {
+  setorId: string | null;
+  nome: string;
+  descricao: string | null;
+  recorrencia: Recorrencia;
+  diasSemana: number[];
+  diaMes: number | null;
+  apenasDiasUteis: boolean;
+  horarioLimite: string;
+  prioridade: Prioridade;
+  tempoEstimadoMin: number | null;
+}
+
+export interface PadraoTarefa extends RegraTarefaRequest {
+  id: string;
+  ordem: number;
+  ativo: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export type PadraoTarefaRequest = RegraTarefaRequest;
+
+export interface DefinicaoTarefa extends RegraTarefaRequest {
+  id: string;
+  empresaId: string;
+  padraoId: string | null;
+  responsavelId: string | null;
+  dataUnica: string | null;
+  visivelCliente: boolean;
+  ordem: number;
+  ativa: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export interface DefinicaoTarefaRequest extends RegraTarefaRequest {
+  empresaId: string;
+  padraoId: string | null;
+  responsavelId: string | null;
+  dataUnica: string | null;
+  visivelCliente: boolean;
+}
+
 export interface OcorrenciaRef {
   id: string;
   nome: string;

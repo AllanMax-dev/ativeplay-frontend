@@ -138,7 +138,7 @@ export function PermissoesScreen() {
                       <TableCell key={perfil}>
                         {canEdit ? (
                           <Select value={nivel} onValueChange={(value) => update(perfil, modulo, value as NivelPermissao)}>
-                            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-44"><SelectValue>{LEVEL_LABELS[nivel]}</SelectValue></SelectTrigger>
                             <SelectContent>{Object.entries(LEVEL_LABELS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
                           </Select>
                         ) : (

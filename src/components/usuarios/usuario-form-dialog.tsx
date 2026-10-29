@@ -190,7 +190,7 @@ export function UsuarioFormDialog({
             <div className="space-y-2">
               <Label>Perfil</Label>
               <Select value={form.perfil} onValueChange={(value) => update("perfil", value as Perfil)}>
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue>{PROFILE_LABELS[form.perfil]}</SelectValue></SelectTrigger>
                 <SelectContent>
                   {perfis.map((perfil) => <SelectItem key={perfil} value={perfil}>{PROFILE_LABELS[perfil]}</SelectItem>)}
                 </SelectContent>
@@ -222,7 +222,7 @@ export function UsuarioFormDialog({
               <div className="space-y-2 sm:col-span-2">
                 <Label>Empresa do cliente</Label>
                 <Select value={form.empresaId || "SEM_EMPRESA"} onValueChange={(value) => update("empresaId", !value || value === "SEM_EMPRESA" ? "" : value)}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue>{empresas.find((empresa) => empresa.id === form.empresaId)?.razaoSocial ?? "Selecione uma empresa"}</SelectValue></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="SEM_EMPRESA">Selecione uma empresa</SelectItem>
                     {empresas.map((empresa) => <SelectItem key={empresa.id} value={empresa.id}>{empresa.razaoSocial}</SelectItem>)}

@@ -203,18 +203,18 @@ export function UsuariosScreen() {
       <form onSubmit={applyFilters} className="mt-7 grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 xl:grid-cols-[1fr_11rem_11rem_13rem_auto]" role="search">
         <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuários" />
         <Select value={draft.perfil} onValueChange={(value) => setDraft((current) => ({ ...current, perfil: value as Filters["perfil"] }))}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue>{draft.perfil === "TODOS" ? "Todos os perfis" : PROFILE_LABELS[draft.perfil]}</SelectValue></SelectTrigger>
           <SelectContent>
             <SelectItem value="TODOS">Todos os perfis</SelectItem>
             {Object.entries(PROFILE_LABELS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={draft.ativo} onValueChange={(value) => setDraft((current) => ({ ...current, ativo: value as Filters["ativo"] }))}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue>{{ TODOS: "Todos os status", ATIVOS: "Ativos", INATIVOS: "Inativos" }[draft.ativo]}</SelectValue></SelectTrigger>
           <SelectContent><SelectItem value="TODOS">Todos os status</SelectItem><SelectItem value="ATIVOS">Ativos</SelectItem><SelectItem value="INATIVOS">Inativos</SelectItem></SelectContent>
         </Select>
         <Select value={draft.setorId} onValueChange={(value) => setDraft((current) => ({ ...current, setorId: value ?? "TODOS" }))}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue>{setores.find((setor) => setor.id === draft.setorId)?.nome ?? "Todos os setores"}</SelectValue></SelectTrigger>
           <SelectContent><SelectItem value="TODOS">Todos os setores</SelectItem>{setores.map((setor) => <SelectItem key={setor.id} value={setor.id}>{setor.nome}</SelectItem>)}</SelectContent>
         </Select>
         <Button type="submit" variant="outline"><Search aria-hidden="true" /> Filtrar</Button>

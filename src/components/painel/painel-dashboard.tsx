@@ -199,7 +199,7 @@ export function PainelDashboard() {
       </section>
 
       {summary.mrr !== undefined || summary.pipelineCrm !== undefined ? (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[0.7fr_1.3fr] lg:items-start">
           {summary.mrr !== undefined ? (
             <section className="rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="mrr-title">
               <h2 id="mrr-title" className="text-base font-semibold">Receita mensal recorrente</h2>

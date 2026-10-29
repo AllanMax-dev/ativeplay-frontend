@@ -17,10 +17,10 @@ export function ContadorGeralHeader() {
 
   if (!atual) {
     return (
-      <div className="hidden items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-accent-foreground md:flex">
+      <div className="flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-accent-foreground">
         <TimerOff className="size-3.5" aria-hidden="true" />
-        <span>Nenhuma empresa aberta</span>
-        <span aria-hidden="true">·</span>
+        <span className="hidden sm:inline">Nenhuma empresa aberta</span>
+        <span className="hidden sm:inline" aria-hidden="true">·</span>
         <span className="tabular-nums">Hoje {formatHoursMinutes(totalHojeMs)}</span>
       </div>
     );

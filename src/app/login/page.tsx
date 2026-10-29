@@ -34,7 +34,7 @@ export default function LoginPage() {
         <p className="text-xs text-muted-foreground">Ative Play · Gestão operacional</p>
       </section>
 
-      <section className="flex items-center justify-center bg-card px-5 py-10 sm:px-10">
+      <section className="flex items-start justify-center bg-card px-5 pb-10 pt-12 sm:px-10 sm:pt-16 lg:items-center lg:py-10">
         <div className="w-full max-w-md">
           <div className="mb-9 lg:hidden">
             <div className="flex items-center gap-3">

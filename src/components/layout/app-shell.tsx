@@ -22,6 +22,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { ContadorGeralHeader } from "@/components/sessao/contador-geral";
+import { SessaoProvider } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { canReadModule } from "@/lib/access-control";
@@ -151,6 +153,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <SessaoProvider>
     <div className="min-h-screen bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 bg-sidebar text-sidebar-foreground lg:block">
         <SidebarContent />
@@ -196,6 +199,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p className="truncate text-sm font-medium">{me?.escritorio.nome}</p>
             <p className="truncate text-xs text-muted-foreground">{me?.email}</p>
           </div>
+          <ContadorGeralHeader />
           <Button
             type="button"
             variant="ghost"
@@ -209,5 +213,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="px-4 py-7 sm:px-6 lg:px-10 lg:py-10">{children}</main>
       </div>
     </div>
+    </SessaoProvider>
   );
 }

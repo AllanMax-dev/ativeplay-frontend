@@ -44,6 +44,7 @@ const MODULE_LABELS: Record<Modulo, string> = {
   USUARIOS: "Usuários",
   CONFIGURACOES: "Configurações",
   AUDITORIA: "Auditoria",
+  SENHAS: "Senhas salvas",
 };
 
 const LEVEL_LABELS: Record<NivelPermissao, string> = {

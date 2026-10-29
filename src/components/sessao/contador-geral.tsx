@@ -17,7 +17,7 @@ export function ContadorGeralHeader() {
 
   if (!atual) {
     return (
-      <div className="flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-accent-foreground">
+      <div className="motion-fade-in flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-accent-foreground">
         <TimerOff className="size-3.5" aria-hidden="true" />
         <span className="hidden sm:inline">Nenhuma empresa aberta</span>
         <span className="hidden sm:inline" aria-hidden="true">·</span>
@@ -28,7 +28,8 @@ export function ContadorGeralHeader() {
 
   return (
     <div
-      className="flex min-w-0 items-center gap-2 rounded-full bg-accent py-1 pr-1 pl-3 text-accent-foreground"
+      key={atual.empresaId}
+      className="motion-fade-in flex min-w-0 items-center gap-2 rounded-full bg-accent py-1 pr-1 pl-3 text-accent-foreground"
       role="timer"
       aria-label={`Contador geral em ${atual.empresaNome ?? "empresa"}: ${formatClock(atualMs)}`}
     >
@@ -69,7 +70,7 @@ export function ContadorGeralSidebar() {
 
   return (
     <section
-      className={`rounded-xl px-3 py-3 ${atual ? "bg-sidebar-accent text-sidebar-accent-foreground" : "border border-sidebar-border"}`}
+      className={`rounded-xl border px-3 py-3 transition-[background-color,border-color] duration-200 ease-(--ease-out) ${atual ? "border-transparent bg-sidebar-accent text-sidebar-accent-foreground" : "border-sidebar-border"}`}
       role={atual ? "timer" : undefined}
       aria-label={
         atual
@@ -89,7 +90,7 @@ export function ContadorGeralSidebar() {
         <span className="tabular-nums text-muted-foreground">Hoje {formatHoursMinutes(totalHojeMs)}</span>
       </div>
       {atual ? (
-        <>
+        <div key={atual.empresaId} className="motion-fade-in">
           <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] tabular-nums">{formatClock(atualMs)}</p>
           <div className="mt-1 flex items-center justify-between gap-2">
             <Link
@@ -113,9 +114,9 @@ export function ContadorGeralSidebar() {
               </Button>
             ) : null}
           </div>
-        </>
+        </div>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground">Nenhuma empresa aberta</p>
+        <p className="motion-fade-in mt-2 text-sm text-muted-foreground">Nenhuma empresa aberta</p>
       )}
     </section>
   );

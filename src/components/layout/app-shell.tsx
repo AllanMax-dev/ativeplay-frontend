@@ -103,7 +103,7 @@ function SidebarContent({
         <Brand officeName={me.escritorio.nome} />
       </div>
       <Separator className="bg-sidebar-border" />
-      <nav className="flex-1 space-y-1 px-3 py-5" aria-label="Menu principal">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Menu principal">
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = item.href === pathname;
@@ -178,7 +178,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SessaoProvider>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:block">
         <SidebarContent onLogout={() => void handleLogout()} loggingOut={loggingOut} />
       </aside>

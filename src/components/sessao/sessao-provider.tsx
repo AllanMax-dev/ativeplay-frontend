@@ -215,7 +215,7 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
             </DialogHeader>
             <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
               <div className="rounded-lg border bg-muted/40 p-4 text-center">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Empresa atual</p>
+                <p className="text-xs font-medium text-muted-foreground">Empresa atual</p>
                 <p className="mt-2 flex items-center justify-center gap-2 font-semibold">
                   <Building2 className="size-4 text-muted-foreground" aria-hidden="true" />
                   {pending.from}
@@ -226,7 +226,7 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
               </div>
               <ArrowRightLeft className="mx-auto hidden size-5 self-center text-muted-foreground sm:block" aria-hidden="true" />
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center">
-                <p className="text-xs font-medium uppercase tracking-wide text-primary">Abrir próxima empresa</p>
+                <p className="text-xs font-medium text-primary">Abrir próxima empresa</p>
                 <p className="mt-2 flex items-center justify-center gap-2 font-semibold text-primary">
                   <Building2 className="size-4" aria-hidden="true" />
                   {pending.to.nome}

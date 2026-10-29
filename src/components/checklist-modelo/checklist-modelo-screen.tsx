@@ -122,7 +122,7 @@ export function ChecklistModeloScreen() {
         </div>
       ) : null}
 
-      <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Itens do checklist modelo">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Itens do checklist modelo">
         {loading ? (
           <div className="space-y-3 p-5">
             {Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-28 w-full" />)}

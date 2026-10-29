@@ -49,7 +49,7 @@ export function RentabilidadeSection() {
   const mediaHora = valoresHora.length ? valoresHora.reduce((a, b) => a + b, 0) / valoresHora.length : null;
 
   return (
-    <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-labelledby="profit-title">
+    <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-labelledby="profit-title">
       <div className="flex flex-col gap-1 p-5 sm:p-6">
         <h2 id="profit-title" className="flex items-center gap-2 text-base font-semibold">
           <Timer className="size-4 text-primary" aria-hidden="true" /> Tempo por cliente × honorário

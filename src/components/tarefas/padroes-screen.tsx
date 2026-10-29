@@ -165,7 +165,7 @@ export function PadroesScreen() {
         </div>
       ) : null}
 
-      <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Lista de padrões de tarefa">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Lista de padrões de tarefa">
         {loading ? (
           <div className="space-y-3 p-5">
             {Array.from({ length: 5 }, (_, index) => <Skeleton key={index} className="h-24 w-full" />)}

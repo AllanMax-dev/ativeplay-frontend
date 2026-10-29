@@ -152,7 +152,7 @@ export function ChecklistPanel({
   const visible = aba === "PENDENTES" ? pendentes : concluidos;
 
   return (
-    <section className="overflow-hidden rounded-xl border bg-background" aria-labelledby="checklist-title">
+    <section className="overflow-hidden rounded-xl border bg-card" aria-labelledby="checklist-title">
       <div className="flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
           <h2 id="checklist-title" className="font-semibold">Checklist do cliente</h2>

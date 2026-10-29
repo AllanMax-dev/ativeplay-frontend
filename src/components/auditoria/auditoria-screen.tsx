@@ -91,7 +91,7 @@ export function AuditoriaScreen() {
     <div className="mx-auto max-w-6xl">
       <div><h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Auditoria</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Consulte, em ordem cronológica, as ações registradas no escritório.</p></div>
 
-      <form onSubmit={applyFilters} className="mt-7 grid gap-4 rounded-xl border bg-background p-4 sm:grid-cols-2 lg:grid-cols-3">
+      <form onSubmit={applyFilters} className="mt-7 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2"><Label htmlFor="audit-action">Ação (prefixo)</Label><Input id="audit-action" value={draft.acao} onChange={(event) => update("acao", event.target.value)} placeholder="Ex.: usuario." /></div>
         <div className="space-y-2"><Label htmlFor="audit-entity">Entidade</Label><Input id="audit-entity" value={draft.entidade} onChange={(event) => update("entidade", event.target.value)} placeholder="Ex.: usuario" /></div>
         <div className="space-y-2"><Label htmlFor="audit-entity-id">ID da entidade</Label><Input id="audit-entity-id" value={draft.entidadeId} onChange={(event) => update("entidadeId", event.target.value)} /></div>
@@ -109,7 +109,7 @@ export function AuditoriaScreen() {
             {result.dados.map((item) => (
               <li key={item.id} className="relative pb-7 pl-7 last:pb-0">
                 <span className="absolute -left-1.5 top-2 size-3 rounded-full border-2 border-background bg-primary" aria-hidden="true" />
-                <article className="rounded-xl border bg-background p-4 sm:p-5">
+                <article className="rounded-xl border bg-card p-4 sm:p-5">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"><div><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{item.acao}</Badge><span className="text-sm text-muted-foreground">{item.entidade}{item.entidadeId ? ` · ${item.entidadeId}` : ""}</span></div><p className="mt-3 text-sm font-medium">{item.descricao ?? "Ação registrada sem descrição."}</p></div><time className="shrink-0 text-xs tabular-nums text-muted-foreground" dateTime={item.criadoEm}>{new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "medium" }).format(new Date(item.criadoEm))}</time></div>
                   <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">{item.usuarioId ? <span>Usuário: {item.usuarioId}</span> : null}{item.empresaId ? <span>Empresa: {item.empresaId}</span> : null}{item.ip ? <span>IP: {item.ip}</span> : null}</div>
                   {item.dados && Object.keys(item.dados).length > 0 ? <details className="mt-3 text-xs"><summary className="cursor-pointer font-medium text-muted-foreground">Ver dados técnicos</summary><pre className="mt-2 overflow-x-auto rounded-lg bg-muted p-3 text-xs">{JSON.stringify(item.dados, null, 2)}</pre></details> : null}
@@ -117,7 +117,7 @@ export function AuditoriaScreen() {
               </li>
             ))}
           </ol>
-        ) : <div className="rounded-xl border bg-background px-6 py-14 text-center"><History className="mx-auto size-10 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 font-semibold">Nenhum evento encontrado</h2><p className="mt-2 text-sm text-muted-foreground">Ajuste os filtros para ampliar a consulta.</p></div>}
+        ) : <div className="rounded-xl border bg-card px-6 py-14 text-center"><History className="mx-auto size-10 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 font-semibold">Nenhum evento encontrado</h2><p className="mt-2 text-sm text-muted-foreground">Ajuste os filtros para ampliar a consulta.</p></div>}
       </section>
 
       {result && result.total > 0 ? <div className="mt-5 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><p>{result.total} {result.total === 1 ? "evento" : "eventos"}</p><div className="flex items-center gap-2"><Button variant="outline" size="sm" onClick={() => { setLoading(true); setPage(page - 1); }} disabled={page <= 1 || loading}><ChevronLeft aria-hidden="true" /> Anterior</Button><span className="px-2 tabular-nums">Página {page} de {totalPages}</span><Button variant="outline" size="sm" onClick={() => { setLoading(true); setPage(page + 1); }} disabled={page >= totalPages || loading}>Próxima <ChevronRight aria-hidden="true" /></Button></div></div> : null}

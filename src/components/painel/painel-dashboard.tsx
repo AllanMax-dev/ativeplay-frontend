@@ -127,7 +127,7 @@ export function PainelDashboard() {
         </Button>
       </div>
 
-      <section className="mt-8 overflow-hidden rounded-xl border bg-background" aria-label="Indicadores principais">
+      <section className="mt-8 overflow-hidden rounded-xl border bg-card" aria-label="Indicadores principais">
         <dl className="grid sm:grid-cols-2 xl:grid-cols-4">
           <div className="border-b px-5 py-5 sm:border-r xl:border-b-0">
             <dt className="text-sm text-muted-foreground">Tarefas do dia</dt>
@@ -157,7 +157,7 @@ export function PainelDashboard() {
       </section>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border bg-background p-5 sm:p-6" aria-labelledby="today-status-title">
+        <section className="rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="today-status-title">
           <h2 id="today-status-title" className="text-base font-semibold">Tarefas por status</h2>
           <div className="mt-5 divide-y">
             {Object.entries(summary.ocorrenciasDiaPorStatus).map(([status, total]) => (
@@ -169,7 +169,7 @@ export function PainelDashboard() {
           </div>
         </section>
 
-        <section className="rounded-xl border bg-background p-5 sm:p-6" aria-labelledby="company-status-title">
+        <section className="rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="company-status-title">
           <h2 id="company-status-title" className="text-base font-semibold">Empresas por status</h2>
           <div className="mt-5 divide-y">
             {Object.entries(summary.empresasPorStatus).map(([status, total]) => (
@@ -182,7 +182,7 @@ export function PainelDashboard() {
         </section>
       </div>
 
-      <section className="mt-6 rounded-xl border bg-background p-5 sm:p-6" aria-labelledby="time-title">
+      <section className="mt-6 rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="time-title">
         <h2 id="time-title" className="text-base font-semibold">Tempo por responsável em 30 dias</h2>
         {summary.tempoPorResponsavel30d.length > 0 ? (
           <div className="mt-5 divide-y">
@@ -201,7 +201,7 @@ export function PainelDashboard() {
       {summary.mrr !== undefined || summary.pipelineCrm !== undefined ? (
         <div className="mt-6 grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
           {summary.mrr !== undefined ? (
-            <section className="rounded-xl border bg-background p-5 sm:p-6" aria-labelledby="mrr-title">
+            <section className="rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="mrr-title">
               <h2 id="mrr-title" className="text-base font-semibold">Receita mensal recorrente</h2>
               <p className="mt-4 text-2xl font-semibold tabular-nums">{formatCurrency(summary.mrr)}</p>
               <p className="mt-2 text-sm text-muted-foreground">Honorários das empresas ativas.</p>
@@ -209,7 +209,7 @@ export function PainelDashboard() {
           ) : null}
 
           {summary.pipelineCrm !== undefined ? (
-            <section className="rounded-xl border bg-background p-5 sm:p-6" aria-labelledby="pipeline-title">
+            <section className="rounded-xl border bg-card p-5 sm:p-6" aria-labelledby="pipeline-title">
               <h2 id="pipeline-title" className="text-base font-semibold">Pipeline de CRM</h2>
               {summary.pipelineCrm.length > 0 ? (
                 <div className="mt-5 space-y-3">

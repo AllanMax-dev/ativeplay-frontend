@@ -3,10 +3,10 @@ import { LoginForm } from "@/components/auth/login-form";
 
 export default function LoginPage() {
   return (
-    <main className="grid min-h-screen bg-background lg:grid-cols-[minmax(0,1fr)_minmax(30rem,0.8fr)]">
-      <section className="hidden bg-sidebar px-10 py-12 text-sidebar-foreground lg:flex lg:flex-col lg:justify-between xl:px-16">
+    <main className="grid min-h-dvh bg-background lg:grid-cols-[minmax(0,0.95fr)_minmax(30rem,1.05fr)]">
+      <section className="hidden bg-accent/45 px-10 py-12 text-foreground lg:flex lg:flex-col lg:justify-between xl:px-16">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-lg bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">
+          <span className="grid size-10 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
             AP
           </span>
           <span className="text-lg font-semibold tracking-[-0.02em]">Ative Play</span>
@@ -16,14 +16,14 @@ export default function LoginPage() {
           <h1 className="text-4xl font-semibold leading-tight tracking-[-0.04em] xl:text-5xl">
             A operação financeira do seu escritório em um só lugar.
           </h1>
-          <p className="mt-5 max-w-lg text-base leading-7 text-sidebar-foreground/70">
+          <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">
             Organize empresas, tarefas, documentos e relacionamentos com uma visão clara do trabalho diário.
           </p>
-          <ul className="mt-8 space-y-3 text-sm text-sidebar-foreground/85">
+          <ul className="mt-8 space-y-3 text-sm text-foreground/85">
             {["Acesso protegido por perfil", "Sessão renovada com segurança", "Portal exclusivo para clientes"].map(
               (item) => (
                 <li key={item} className="flex items-center gap-3">
-                  <CheckCircle2 className="size-4 text-sidebar-primary" aria-hidden="true" />
+                  <CheckCircle2 className="size-4 text-primary" aria-hidden="true" />
                   {item}
                 </li>
               ),
@@ -31,10 +31,10 @@ export default function LoginPage() {
           </ul>
         </div>
 
-        <p className="text-xs text-sidebar-foreground/50">Ative Play · Gestão operacional</p>
+        <p className="text-xs text-muted-foreground">Ative Play · Gestão operacional</p>
       </section>
 
-      <section className="flex items-center justify-center px-5 py-10 sm:px-10">
+      <section className="flex items-center justify-center bg-card px-5 py-10 sm:px-10">
         <div className="w-full max-w-md">
           <div className="mb-9 lg:hidden">
             <div className="flex items-center gap-3">

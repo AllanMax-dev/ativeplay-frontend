@@ -393,7 +393,7 @@ export function TarefasScreen() {
       </div>
 
       {/* ---------- filtro por empresa ---------- */}
-      <section className="mt-7 rounded-xl border bg-background p-4" aria-label="Filtro por empresa">
+      <section className="mt-7 rounded-xl border bg-card p-4" aria-label="Filtro por empresa">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="space-y-2">
             <Label>Empresa</Label>
@@ -545,7 +545,7 @@ export function TarefasScreen() {
 
       {aba === "tarefas" ? (
         <>
-          <form onSubmit={applyFilters} className="mt-6 grid gap-4 rounded-xl border bg-background p-4 sm:grid-cols-2 lg:grid-cols-[11rem_13rem_1fr_auto] lg:items-end">
+          <form onSubmit={applyFilters} className="mt-6 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-[11rem_13rem_1fr_auto] lg:items-end">
             <div className="space-y-2">
               <Label htmlFor="task-date">Data</Label>
               <Input
@@ -608,7 +608,7 @@ export function TarefasScreen() {
             </div>
           ) : null}
 
-          <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Lista de tarefas">
+          <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Lista de tarefas">
             {loading ? (
               <div className="space-y-3 p-5">
                 {Array.from({ length: 6 }, (_, index) => (

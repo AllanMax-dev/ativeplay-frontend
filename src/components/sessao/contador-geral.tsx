@@ -80,7 +80,7 @@ export function ContadorGeralCard({
 
   return (
     <section
-      className="mt-6 overflow-hidden rounded-xl border bg-background"
+      className="mt-6 overflow-hidden rounded-xl border bg-card"
       aria-labelledby="general-timer-title"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
@@ -159,7 +159,7 @@ export function ContadorGeralCard({
               <li key={item.empresaId}>
                 <Link
                   href={`/tarefas?empresa=${item.empresaId}`}
-                  className={`inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-xs hover:bg-muted ${
+                  className={`inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-xs hover:bg-muted ${
                     atual?.empresaId === item.empresaId ? "border-primary/40 text-primary" : ""
                   }`}
                 >

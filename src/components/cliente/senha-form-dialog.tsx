@@ -183,7 +183,7 @@ export function SenhaFormDialog({
                   autoComplete="new-password"
                   placeholder={senha?.possuiSenha ? "Deixe em branco para manter a senha atual" : "Senha do acesso"}
                   onChange={(event) => setValorSenha(event.target.value)}
-                  className="h-10 pr-10 font-mono"
+                  className="h-10 pr-10"
                 />
                 <Button
                   type="button"

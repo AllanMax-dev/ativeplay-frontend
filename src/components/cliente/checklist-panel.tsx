@@ -55,6 +55,8 @@ export function ChecklistPanel({
   const [revision, setRevision] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  /** Item que está saindo da aba (animação) depois que a API confirmou a conclusão/reabertura. */
+  const [leavingId, setLeavingId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ChecklistItem | null>(null);
   const [deleting, setDeleting] = useState<ChecklistItem | null>(null);
@@ -112,10 +114,36 @@ export function ChecklistPanel({
     }
   }
 
-  function toggleItem(item: ChecklistItem) {
-    void run(item, () =>
-      api.post<ChecklistItem>(`/empresas/${empresaId}/checklist/${item.id}/${item.concluido ? "reabrir" : "concluir"}`),
-    );
+  async function toggleItem(item: ChecklistItem) {
+    // Só sai da aba depois que a API confirmar: se falhar (ex.: 409), o item fica onde está.
+    await run(item, async () => {
+      const updated = await api.post<ChecklistItem>(
+        `/empresas/${empresaId}/checklist/${item.id}/${item.concluido ? "reabrir" : "concluir"}`,
+      );
+      await playExit(item.id);
+      return updated;
+    });
+    setLeavingId(null);
+  }
+
+  /** Marca o item como saindo e espera a transição da linha (fade + colapso, ver .checklist-row). */
+  function playExit(itemId: string) {
+    setLeavingId(itemId);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const lastProperty = reduce ? "opacity" : "grid-template-rows";
+    return new Promise<void>((resolve) => {
+      const timer = window.setTimeout(resolve, 1000); // segurança, caso a transição não dispare
+      window.requestAnimationFrame(() => {
+        const row = document.querySelector(`[data-item-id="${itemId}"]`);
+        if (!row) return resolve();
+        row.addEventListener("transitionend", (event) => {
+          if (event.target === row && (event as TransitionEvent).propertyName === lastProperty) {
+            window.clearTimeout(timer);
+            resolve();
+          }
+        });
+      });
+    });
   }
 
   function toggleSubitem(item: ChecklistItem, subitemId: string, concluido: boolean) {
@@ -213,121 +241,126 @@ export function ChecklistPanel({
             const hasOpenSubitem = item.subitens.some((sub) => !sub.concluido);
             const completionBlocked = !item.concluido && hasOpenSubitem;
             return (
-              <li key={item.id} className="flex gap-4 p-5 sm:px-6">
-                {canWrite ? (
-                  <span
-                    className="mt-0.5 shrink-0"
-                    tabIndex={completionBlocked ? 0 : undefined}
-                    aria-label={completionBlocked ? "Conclua todos os sub-itens antes de concluir o item" : undefined}
-                    title={completionBlocked ? "Conclua todos os sub-itens antes de concluir o item" : undefined}
-                  >
-                  <button
-                    type="button"
-                    onClick={() => toggleItem(item)}
-                    disabled={busy || completionBlocked}
-                    className={`grid size-8 place-items-center rounded-full border-2 transition-colors disabled:opacity-50 ${
-                      item.concluido
-                        ? "border-primary bg-primary text-primary-foreground hover:bg-primary/80"
-                        : "border-primary/40 text-primary/50 hover:border-primary hover:text-primary"
-                    }`}
-                    aria-label={
-                      item.concluido
-                        ? `Reabrir ${item.titulo}`
-                        : completionBlocked
-                          ? `Conclua todos os sub-itens antes de concluir ${item.titulo}`
-                          : `Concluir ${item.titulo}`
-                    }
-                    title={
-                      item.concluido
-                        ? "Reabrir"
-                        : completionBlocked ? undefined : "Concluir"
-                    }
-                  >
-                    {item.concluido ? <RotateCcw className="size-4" aria-hidden="true" /> : <CheckCircle2 className="size-4" aria-hidden="true" />}
-                  </button>
-                  </span>
-                ) : null}
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={item.atrasado ? "destructive" : "outline"}>
-                      <CalendarClock aria-hidden="true" />
-                      {item.prazo ? formatLocalDate(item.prazo) : "Sem prazo"}
-                    </Badge>
-                    {item.atrasado ? <Badge variant="destructive">Atrasado</Badge> : null}
-                    {item.prioridade !== "MEDIA" ? (
-                      <Badge variant={item.prioridade === "URGENTE" ? "destructive" : "secondary"}>
-                        {CHECKLIST_PRIORITY_LABELS[item.prioridade]}
-                      </Badge>
-                    ) : null}
-                    {item.subitens.length > 0 ? (
-                      <Badge variant="secondary">
-                        {item.subitensConcluidos}/{item.subitens.length}
-                      </Badge>
-                    ) : null}
-                  </div>
-                  <h3 className={`mt-2 font-semibold ${item.concluido ? "text-muted-foreground line-through" : ""}`}>
-                    {item.titulo}
-                  </h3>
-                  {item.observacoes ? (
-                    <p className="mt-1 whitespace-pre-line text-sm leading-6 text-muted-foreground">{item.observacoes}</p>
-                  ) : null}
-
-                  {item.subitens.length > 0 ? (
-                    <ul className="mt-3 space-y-1.5">
-                      {item.subitens.map((sub) => (
-                        <li key={sub.id}>
-                          <label className={`flex items-center gap-2 text-sm ${canWrite && !item.concluido ? "cursor-pointer" : ""}`}>
-                            <Checkbox
-                              checked={sub.concluido}
-                              disabled={!canWrite || busy || item.concluido}
-                              onCheckedChange={(checked) => toggleSubitem(item, sub.id, checked)}
-                            />
-                            <span className={sub.concluido ? "text-muted-foreground line-through" : ""}>{sub.texto}</span>
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-
-                  <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
-                      <UserRound className="size-3" aria-hidden="true" />
-                      {item.responsavel?.nome ?? "Sem responsável"}
+              <li key={item.id} className="checklist-row" data-item-id={item.id} data-leaving={leavingId === item.id ? "" : undefined}>
+                {/* sem padding aqui: a linha precisa poder fechar até 0 */}
+                <div className="min-h-0 overflow-hidden">
+                <div className="flex gap-4 p-5 sm:px-6">
+                  {canWrite ? (
+                    <span
+                      className="mt-0.5 shrink-0"
+                      tabIndex={completionBlocked ? 0 : undefined}
+                      aria-label={completionBlocked ? "Conclua todos os sub-itens antes de concluir o item" : undefined}
+                      title={completionBlocked ? "Conclua todos os sub-itens antes de concluir o item" : undefined}
+                    >
+                    <button
+                      type="button"
+                      onClick={() => void toggleItem(item)}
+                      disabled={busy || completionBlocked}
+                      className={`grid size-8 place-items-center rounded-full border-2 transition-colors disabled:opacity-50 ${
+                        item.concluido
+                          ? "border-primary bg-primary text-primary-foreground hover:bg-primary/80"
+                          : "border-primary/40 text-primary/50 hover:border-primary hover:text-primary"
+                      }`}
+                      aria-label={
+                        item.concluido
+                          ? `Reabrir ${item.titulo}`
+                          : completionBlocked
+                            ? `Conclua todos os sub-itens antes de concluir ${item.titulo}`
+                            : `Concluir ${item.titulo}`
+                      }
+                      title={
+                        item.concluido
+                          ? "Reabrir"
+                          : completionBlocked ? undefined : "Concluir"
+                      }
+                    >
+                      {item.concluido ? <RotateCcw className="size-4" aria-hidden="true" /> : <CheckCircle2 className="size-4" aria-hidden="true" />}
+                    </button>
                     </span>
-                    {item.criadoPor?.nome ? <span>Criado por {item.criadoPor.nome}</span> : null}
-                    {item.concluido && item.concluidoEm ? (
-                      <span>
-                        Concluído{item.concluidoPor?.nome ? ` por ${item.concluidoPor.nome}` : ""} em{" "}
-                        {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(item.concluidoEm))}
-                      </span>
-                    ) : null}
-                  </p>
-                </div>
+                  ) : null}
 
-                {canWrite ? (
-                  <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-start">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => { setEditing(item); setFormOpen(true); }}
-                      aria-label={`Editar ${item.titulo}`}
-                      title="Editar"
-                    >
-                      <Pencil aria-hidden="true" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setDeleting(item)}
-                      aria-label={`Excluir ${item.titulo}`}
-                      title="Excluir"
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 aria-hidden="true" />
-                    </Button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={item.atrasado ? "destructive" : "outline"}>
+                        <CalendarClock aria-hidden="true" />
+                        {item.prazo ? formatLocalDate(item.prazo) : "Sem prazo"}
+                      </Badge>
+                      {item.atrasado ? <Badge variant="destructive">Atrasado</Badge> : null}
+                      {item.prioridade !== "MEDIA" ? (
+                        <Badge variant={item.prioridade === "URGENTE" ? "destructive" : "secondary"}>
+                          {CHECKLIST_PRIORITY_LABELS[item.prioridade]}
+                        </Badge>
+                      ) : null}
+                      {item.subitens.length > 0 ? (
+                        <Badge variant="secondary">
+                          {item.subitensConcluidos}/{item.subitens.length}
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <h3 className={`mt-2 font-semibold ${item.concluido ? "text-muted-foreground line-through" : ""}`}>
+                      {item.titulo}
+                    </h3>
+                    {item.observacoes ? (
+                      <p className="mt-1 whitespace-pre-line text-sm leading-6 text-muted-foreground">{item.observacoes}</p>
+                    ) : null}
+
+                    {item.subitens.length > 0 ? (
+                      <ul className="mt-3 space-y-1.5">
+                        {item.subitens.map((sub) => (
+                          <li key={sub.id}>
+                            <label className={`flex items-center gap-2 text-sm ${canWrite && !item.concluido ? "cursor-pointer" : ""}`}>
+                              <Checkbox
+                                checked={sub.concluido}
+                                disabled={!canWrite || busy || item.concluido}
+                                onCheckedChange={(checked) => toggleSubitem(item, sub.id, checked)}
+                              />
+                              <span className={sub.concluido ? "text-muted-foreground line-through" : ""}>{sub.texto}</span>
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+
+                    <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <UserRound className="size-3" aria-hidden="true" />
+                        {item.responsavel?.nome ?? "Sem responsável"}
+                      </span>
+                      {item.criadoPor?.nome ? <span>Criado por {item.criadoPor.nome}</span> : null}
+                      {item.concluido && item.concluidoEm ? (
+                        <span>
+                          Concluído{item.concluidoPor?.nome ? ` por ${item.concluidoPor.nome}` : ""} em{" "}
+                          {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(item.concluidoEm))}
+                        </span>
+                      ) : null}
+                    </p>
                   </div>
-                ) : null}
+
+                  {canWrite ? (
+                    <div className="flex shrink-0 flex-col gap-1 sm:flex-row sm:items-start">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => { setEditing(item); setFormOpen(true); }}
+                        aria-label={`Editar ${item.titulo}`}
+                        title="Editar"
+                      >
+                        <Pencil aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setDeleting(item)}
+                        aria-label={`Excluir ${item.titulo}`}
+                        title="Excluir"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 aria-hidden="true" />
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+                </div>
               </li>
             );
           })}

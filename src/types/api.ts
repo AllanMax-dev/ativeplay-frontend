@@ -10,7 +10,8 @@ export type Modulo =
   | "INTEGRACOES"
   | "USUARIOS"
   | "CONFIGURACOES"
-  | "AUDITORIA";
+  | "AUDITORIA"
+  | "SENHAS";
 
 export interface Pagina<T> {
   dados: T[];

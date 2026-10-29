@@ -4,6 +4,7 @@ import { AlertTriangle, Clock3, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RentabilidadeSection } from "@/components/painel/rentabilidade-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, ApiError } from "@/lib/api";
 import type { PainelResumo } from "@/types/painel";
@@ -227,6 +228,8 @@ export function PainelDashboard() {
           ) : null}
         </div>
       ) : null}
+
+      <RentabilidadeSection />
     </div>
   );
 }

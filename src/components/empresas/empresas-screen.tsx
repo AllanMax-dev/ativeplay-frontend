@@ -1,6 +1,7 @@
 "use client";
 
-import { Building2, ChevronLeft, ChevronRight, Pencil, Plus, Search } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, LogIn, Pencil, Plus, Search } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { EmpresaFormDialog } from "@/components/empresas/empresa-form-dialog";
@@ -16,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { canWriteModule } from "@/lib/access-control";
+import { canReadModule, canWriteModule } from "@/lib/access-control";
 import { api, ApiError, withQuery } from "@/lib/api";
 import type { Pagina } from "@/types/api";
 import type { EmpresaDetalhe, EmpresaResumo, StatusEmpresa } from "@/types/empresa";
@@ -51,6 +52,8 @@ export function EmpresasScreen() {
   const [editing, setEditing] = useState<EmpresaDetalhe | null>(null);
   const [loadingDetailId, setLoadingDetailId] = useState<string | null>(null);
   const canWrite = me ? canWriteModule(me, "EMPRESAS") : false;
+  const canOpenTasks = me ? canReadModule(me, "TAREFAS") : false;
+  const showActions = canWrite || canOpenTasks;
 
   useEffect(() => {
     let active = true;
@@ -179,7 +182,7 @@ export function EmpresasScreen() {
                 <TableHead className="text-right">Honorário</TableHead>
                 <TableHead className="text-right">Hoje</TableHead>
                 <TableHead className="text-right">Atrasadas</TableHead>
-                {canWrite ? <TableHead className="pr-5 text-right">Ações</TableHead> : null}
+                {showActions ? <TableHead className="pr-5 text-right">Ações</TableHead> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -205,17 +208,32 @@ export function EmpresasScreen() {
                       {empresa.tarefasAtrasadas}
                     </span>
                   </TableCell>
-                  {canWrite ? (
+                  {showActions ? (
                     <TableCell className="pr-5 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEdit(empresa.id)}
-                        disabled={loadingDetailId === empresa.id}
-                      >
-                        <Pencil aria-hidden="true" />
-                        {loadingDetailId === empresa.id ? "Abrindo..." : "Editar"}
-                      </Button>
+                      <div className="inline-flex items-center gap-1">
+                        {canOpenTasks ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            render={<Link href={`/tarefas?empresa=${empresa.id}`} />}
+                            nativeButton={false}
+                            title="Entrar no cliente: tarefas do dia, checklist e senhas salvas"
+                          >
+                            <LogIn aria-hidden="true" /> Abrir
+                          </Button>
+                        ) : null}
+                        {canWrite ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEdit(empresa.id)}
+                            disabled={loadingDetailId === empresa.id}
+                          >
+                            <Pencil aria-hidden="true" />
+                            {loadingDetailId === empresa.id ? "Abrindo..." : "Editar"}
+                          </Button>
+                        ) : null}
+                      </div>
                     </TableCell>
                   ) : null}
                 </TableRow>

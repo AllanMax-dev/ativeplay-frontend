@@ -207,7 +207,7 @@ export function ChecklistPanel({
           {Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-24 w-full" />)}
         </div>
       ) : visible.length > 0 ? (
-        <ul className="divide-y" role="tabpanel">
+        <ul key={aba} className="motion-fade-in divide-y" role="tabpanel">
           {visible.map((item) => {
             const busy = busyId === item.id;
             const hasOpenSubitem = item.subitens.some((sub) => !sub.concluido);
@@ -333,7 +333,7 @@ export function ChecklistPanel({
           })}
         </ul>
       ) : (
-        <div className="px-6 py-14 text-center" role="tabpanel">
+        <div key={aba} className="motion-fade-in px-6 py-14 text-center" role="tabpanel">
           <ClipboardCheck className="mx-auto size-10 text-muted-foreground" aria-hidden="true" />
           <h3 className="mt-4 font-semibold">
             {aba === "PENDENTES" ? "Nenhuma pendência neste cliente" : "Nenhum item concluído"}

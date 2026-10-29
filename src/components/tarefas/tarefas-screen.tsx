@@ -526,7 +526,7 @@ export function TarefasScreen() {
       ) : null}
 
       {company && aba === "checklist" ? (
-        <div className="mt-6">
+        <div className="motion-fade-in mt-6">
           <ChecklistPanel
             key={company.id}
             empresaId={company.id}
@@ -538,13 +538,13 @@ export function TarefasScreen() {
       ) : null}
 
       {company && aba === "senhas" && canReadPasswords ? (
-        <div className="mt-6">
+        <div className="motion-fade-in mt-6">
           <SenhasPanel key={company.id} empresaId={company.id} empresaNome={companyName} canWrite={canWritePasswords} />
         </div>
       ) : null}
 
       {aba === "tarefas" ? (
-        <>
+        <div className="motion-fade-in">
           <form onSubmit={applyFilters} className="mt-6 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-[11rem_13rem_1fr_auto] lg:items-end">
             <div className="space-y-2">
               <Label htmlFor="task-date">Data</Label>
@@ -717,7 +717,7 @@ export function TarefasScreen() {
               </div>
             </div>
           ) : null}
-        </>
+        </div>
       ) : null}
     </div>
   );

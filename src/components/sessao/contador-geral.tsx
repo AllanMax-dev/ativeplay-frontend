@@ -17,10 +17,10 @@ export function ContadorGeralHeader() {
 
   if (!atual) {
     return (
-      <div className="hidden items-center gap-2 rounded-lg border border-dashed px-3 py-1.5 text-xs text-muted-foreground md:flex">
+      <div className="flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs text-accent-foreground">
         <TimerOff className="size-3.5" aria-hidden="true" />
-        <span>Nenhuma empresa aberta</span>
-        <span aria-hidden="true">·</span>
+        <span className="hidden sm:inline">Nenhuma empresa aberta</span>
+        <span className="hidden sm:inline" aria-hidden="true">·</span>
         <span className="tabular-nums">Hoje {formatHoursMinutes(totalHojeMs)}</span>
       </div>
     );
@@ -28,14 +28,11 @@ export function ContadorGeralHeader() {
 
   return (
     <div
-      className="flex min-w-0 items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 py-1 pr-1 pl-3"
+      className="flex min-w-0 items-center gap-2 rounded-full bg-accent py-1 pr-1 pl-3 text-accent-foreground"
       role="timer"
       aria-label={`Contador geral em ${atual.empresaNome ?? "empresa"}: ${formatClock(atualMs)}`}
     >
-      <span className="relative flex size-2 shrink-0" aria-hidden="true">
-        <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/60" />
-        <span className="relative inline-flex size-2 rounded-full bg-primary" />
-      </span>
+      <span className="size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
       <Link
         href={`/tarefas?empresa=${atual.empresaId}`}
         className="hidden max-w-40 truncate text-xs font-medium hover:underline sm:inline"
@@ -43,11 +40,12 @@ export function ContadorGeralHeader() {
       >
         {atual.empresaNome}
       </Link>
-      <span className="font-mono text-sm font-semibold tabular-nums text-primary">{formatClock(atualMs)}</span>
+      <span className="text-sm font-semibold tabular-nums">{formatClock(atualMs)}</span>
       {canControl ? (
         <Button
           size="xs"
-          variant="destructive"
+          variant="ghost"
+          className="text-accent-foreground hover:bg-primary/10 hover:text-accent-foreground"
           onClick={() => void finalizar()}
           disabled={busy}
           title="Finalizar empresa (para o contador geral)"
@@ -57,6 +55,69 @@ export function ContadorGeralHeader() {
         </Button>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Versão do contador geral para a barra lateral (telas grandes): sempre visível, com o relógio
+ * em destaque. Mesmos dados e ações do indicador do topo.
+ */
+export function ContadorGeralSidebar() {
+  const { enabled, canControl, atual, busy, finalizar, loading } = useSessao();
+  const { atualMs, totalHojeMs } = useTemposSessao();
+  if (!enabled || loading) return null;
+
+  return (
+    <section
+      className={`rounded-xl px-3 py-3 ${atual ? "bg-sidebar-accent text-sidebar-accent-foreground" : "border border-sidebar-border"}`}
+      role={atual ? "timer" : undefined}
+      aria-label={
+        atual
+          ? `Contador geral em ${atual.empresaNome ?? "empresa"}: ${formatClock(atualMs)}`
+          : "Contador geral"
+      }
+    >
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="flex items-center gap-1.5 font-medium">
+          {atual ? (
+            <span className="size-2 rounded-full bg-sidebar-primary" aria-hidden="true" />
+          ) : (
+            <TimerOff className="size-3.5 text-muted-foreground" aria-hidden="true" />
+          )}
+          Contador geral
+        </span>
+        <span className="tabular-nums text-muted-foreground">Hoje {formatHoursMinutes(totalHojeMs)}</span>
+      </div>
+      {atual ? (
+        <>
+          <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] tabular-nums">{formatClock(atualMs)}</p>
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <Link
+              href={`/tarefas?empresa=${atual.empresaId}`}
+              className="min-w-0 truncate text-sm hover:underline"
+              title="Abrir a empresa em Tarefas do dia"
+            >
+              {atual.empresaNome}
+            </Link>
+            {canControl ? (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="shrink-0 text-sidebar-accent-foreground hover:bg-primary/10 hover:text-sidebar-accent-foreground"
+                onClick={() => void finalizar()}
+                disabled={busy}
+                title="Finalizar empresa (para o contador geral)"
+              >
+                <CirclePause aria-hidden="true" />
+                Finalizar
+              </Button>
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <p className="mt-2 text-sm text-muted-foreground">Nenhuma empresa aberta</p>
+      )}
+    </section>
   );
 }
 
@@ -82,19 +143,16 @@ export function ContadorGeralCard({
 
   return (
     <section
-      className="mt-6 overflow-hidden rounded-xl border bg-background"
+      className="mt-6 overflow-hidden rounded-xl border bg-card"
       aria-labelledby="general-timer-title"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <div className="flex min-w-0 flex-1 items-start gap-4">
-            <span
-              className={`grid size-11 shrink-0 place-items-center rounded-xl ${
-                nestaEmpresa || (!empresa && atual) ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <Timer className="size-5" aria-hidden="true" />
-            </span>
+            <Timer
+              className={`mt-0.5 size-5 shrink-0 ${nestaEmpresa || (!empresa && atual) ? "text-primary" : "text-muted-foreground"}`}
+              aria-hidden="true"
+            />
             <div className="min-w-0">
               <h2 id="general-timer-title" className="text-sm font-semibold">Contador geral</h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -130,7 +188,7 @@ export function ContadorGeralCard({
         <dl className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-lg bg-muted/40 px-4 py-3 sm:grid-cols-3">
           <div>
             <dt className="text-xs text-muted-foreground">{empresa ? "Agora nesta empresa" : "Empresa aberta"}</dt>
-            <dd className={`mt-1 font-mono text-xl font-semibold tabular-nums ${nestaEmpresa || (!empresa && atual) ? "text-primary" : ""}`}>
+            <dd className={`mt-1 text-xl font-semibold tabular-nums ${nestaEmpresa || (!empresa && atual) ? "text-primary" : ""}`}>
               {formatClock(empresa ? (nestaEmpresa ? atualMs : 0) : atualMs)}
             </dd>
           </div>
@@ -164,7 +222,7 @@ export function ContadorGeralCard({
               <li key={item.empresaId}>
                 <Link
                   href={`/tarefas?empresa=${item.empresaId}`}
-                  className={`inline-flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1 text-xs hover:bg-muted ${
+                  className={`inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-xs hover:bg-muted ${
                     atual?.empresaId === item.empresaId ? "border-primary/40 text-primary" : ""
                   }`}
                 >

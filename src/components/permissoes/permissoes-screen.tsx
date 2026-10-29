@@ -121,7 +121,7 @@ export function PermissoesScreen() {
       {error ? <div className="mt-5 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">{error}</div> : null}
       {success ? <div className="mt-5 rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary" role="status">Matriz de permissões atualizada.</div> : null}
 
-      <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Matriz de permissões">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Matriz de permissões">
         {loading ? (
           <div className="space-y-3 p-5">{Array.from({ length: 8 }, (_, index) => <Skeleton key={index} className="h-12 w-full" />)}</div>
         ) : modules.length > 0 ? (
@@ -138,7 +138,7 @@ export function PermissoesScreen() {
                       <TableCell key={perfil}>
                         {canEdit ? (
                           <Select value={nivel} onValueChange={(value) => update(perfil, modulo, value as NivelPermissao)}>
-                            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-44"><SelectValue>{LEVEL_LABELS[nivel]}</SelectValue></SelectTrigger>
                             <SelectContent>{Object.entries(LEVEL_LABELS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
                           </Select>
                         ) : (

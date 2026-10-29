@@ -23,7 +23,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ContadorGeralHeader } from "@/components/sessao/contador-geral";
+import { ContadorGeralHeader, ContadorGeralSidebar } from "@/components/sessao/contador-geral";
 import { SessaoProvider } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -61,7 +61,7 @@ const PROFILE_LABELS: Record<Perfil, string> = {
   CLIENTE: "Cliente",
 };
 
-function Brand() {
+function Brand({ officeName }: { officeName: string }) {
   return (
     <div className="flex items-center gap-3 px-2">
       <span className="grid size-9 place-items-center rounded-lg bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">
@@ -69,13 +69,21 @@ function Brand() {
       </span>
       <div>
         <p className="font-semibold tracking-[-0.02em] text-sidebar-foreground">Ative Play</p>
-        <p className="text-xs text-sidebar-foreground/60">Gestão operacional</p>
+        <p className="max-w-40 truncate text-xs text-muted-foreground">{officeName}</p>
       </div>
     </div>
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({
+  onNavigate,
+  onLogout,
+  loggingOut,
+}: {
+  onNavigate?: () => void;
+  onLogout: () => void;
+  loggingOut: boolean;
+}) {
   const pathname = usePathname();
   const { me } = useAuth();
   if (!me) return null;
@@ -91,11 +99,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-4 py-5">
-        <Brand />
+      <div className="px-4 pb-4 pt-5">
+        <Brand officeName={me.escritorio.nome} />
+      </div>
+      <div className="px-3 pb-4">
+        <ContadorGeralSidebar />
       </div>
       <Separator className="bg-sidebar-border" />
-      <nav className="flex-1 space-y-1 px-3 py-5" aria-label="Menu principal">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4" aria-label="Menu principal">
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = item.href === pathname;
@@ -103,13 +114,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             return (
               <div
                 key={item.label}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/45"
+                className="flex h-8 items-center gap-3 rounded-lg px-3 text-sm text-sidebar-foreground/45"
                 title="Disponível nas próximas fases"
                 aria-disabled="true"
               >
                 <Icon className="size-4" aria-hidden="true" />
                 <span>{item.label}</span>
-                <span className="ml-auto text-[10px] font-medium uppercase tracking-wide">Em breve</span>
+                <span className="ml-auto text-xs text-muted-foreground">Em breve</span>
               </div>
             );
           }
@@ -120,21 +131,31 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               href={item.href}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex h-8 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
                 active
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/55 hover:text-sidebar-foreground"
               }`}
             >
-              <Icon className="size-4" aria-hidden="true" />
+              <Icon className={`size-4 ${active ? "text-sidebar-primary" : ""}`} aria-hidden="true" />
               {item.label}
             </Link>
           );
         })}
       </nav>
-      <div className="px-5 pb-5">
-        <p className="text-xs font-medium text-sidebar-foreground">{me.nome}</p>
-        <p className="mt-1 text-xs text-sidebar-foreground/60">{PROFILE_LABELS[me.perfil]}</p>
+      <div className="border-t border-sidebar-border px-5 py-4">
+        <p className="truncate text-xs font-medium text-sidebar-foreground">{me.nome}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{PROFILE_LABELS[me.perfil]}</p>
+        <Button
+          type="button"
+          variant="ghost"
+          className="mt-3 w-full justify-start px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+          onClick={onLogout}
+          disabled={loggingOut}
+        >
+          <LogOut aria-hidden="true" />
+          {loggingOut ? "Saindo..." : "Sair"}
+        </Button>
       </div>
     </div>
   );
@@ -160,20 +181,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SessaoProvider>
-    <div className="min-h-screen bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 bg-sidebar text-sidebar-foreground lg:block">
-        <SidebarContent />
+    <div className="min-h-dvh bg-background">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:block">
+        <SidebarContent onLogout={() => void handleLogout()} loggingOut={loggingOut} />
       </aside>
 
       {mobileMenuOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-foreground/45"
-            aria-label="Fechar menu"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <aside className="relative h-full w-[min(18rem,86vw)] bg-sidebar text-sidebar-foreground shadow-2xl">
+          <aside className="relative h-full w-full bg-sidebar text-sidebar-foreground">
             <Button
               type="button"
               variant="ghost"
@@ -184,13 +199,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <X aria-hidden="true" />
             </Button>
-            <SidebarContent onNavigate={() => setMobileMenuOpen(false)} />
+            <SidebarContent
+              onNavigate={() => setMobileMenuOpen(false)}
+              onLogout={() => void handleLogout()}
+              loggingOut={loggingOut}
+            />
           </aside>
         </div>
       ) : null}
 
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur-sm sm:px-6 lg:px-10">
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:hidden">
           <Button
             type="button"
             variant="outline"
@@ -201,22 +220,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             <Menu aria-hidden="true" />
           </Button>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 lg:hidden">
             <p className="truncate text-sm font-medium">{me?.escritorio.nome}</p>
             <p className="truncate text-xs text-muted-foreground">{me?.email}</p>
           </div>
           <ContadorGeralHeader />
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleLogout}
-            disabled={loggingOut}
-          >
-            <LogOut aria-hidden="true" />
-            <span className="hidden sm:inline">{loggingOut ? "Saindo..." : "Sair"}</span>
-          </Button>
         </header>
-        <main className="px-4 py-7 sm:px-6 lg:px-10 lg:py-10">{children}</main>
+        <main className="mx-auto w-full max-w-[100rem] px-4 py-7 sm:px-6 lg:px-10 lg:pb-12 lg:pt-9">{children}</main>
       </div>
     </div>
     </SessaoProvider>

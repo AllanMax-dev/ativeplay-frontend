@@ -61,13 +61,13 @@ export function ProfileOverview({ portal = false }: { portal?: boolean }) {
         </div>
       ) : null}
 
-      <section className="mt-8 overflow-hidden rounded-xl border bg-background" aria-labelledby="session-title">
+      <section className="mt-8 overflow-hidden rounded-xl border bg-card" aria-labelledby="session-title">
         <div className="border-b px-5 py-5 sm:px-7">
           <h2 id="session-title" className="text-lg font-semibold tracking-[-0.02em]">
             Dados da sessão
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Informações retornadas pela rota <code className="font-mono text-xs">/auth/me</code>.
+            Informações retornadas pela rota <code className="text-xs">/auth/me</code>.
           </p>
         </div>
 

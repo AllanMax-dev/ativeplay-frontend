@@ -201,7 +201,7 @@ export function DefinicoesScreen() {
         </div>
       ) : null}
 
-      <div className="mt-7 grid gap-4 rounded-xl border bg-background p-4 sm:grid-cols-2">
+      <div className="mt-7 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2">
         <div className="space-y-2">
           <span className="text-sm font-medium">Empresa</span>
           <Select
@@ -250,7 +250,7 @@ export function DefinicoesScreen() {
         </div>
       ) : null}
 
-      <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Lista de rotinas da empresa">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Lista de rotinas da empresa">
         {loadingResources || loadingDefinitions ? (
           <div className="space-y-3 p-5">
             {Array.from({ length: 5 }, (_, index) => <Skeleton key={index} className="h-24 w-full" />)}

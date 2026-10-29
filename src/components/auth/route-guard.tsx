@@ -27,7 +27,7 @@ export function RouteGuard({ children }: { children: React.ReactNode }) {
 
   if (status === "loading" || status === "anonymous" || !isAllowed) {
     return (
-      <main className="grid min-h-screen place-items-center bg-muted/40 px-6">
+      <main className="grid min-h-dvh place-items-center bg-background px-6">
         <div className="w-full max-w-sm space-y-4" aria-label="Carregando sessão">
           <Skeleton className="h-9 w-40" />
           <Skeleton className="h-28 w-full" />

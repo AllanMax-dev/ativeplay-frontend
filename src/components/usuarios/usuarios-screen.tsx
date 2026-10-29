@@ -200,21 +200,21 @@ export function UsuariosScreen() {
         {canWrite ? <Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus aria-hidden="true" /> Novo usuário</Button> : null}
       </div>
 
-      <form onSubmit={applyFilters} className="mt-7 grid gap-3 rounded-xl border bg-background p-4 sm:grid-cols-2 xl:grid-cols-[1fr_11rem_11rem_13rem_auto]" role="search">
+      <form onSubmit={applyFilters} className="mt-7 grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 xl:grid-cols-[1fr_11rem_11rem_13rem_auto]" role="search">
         <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuários" />
         <Select value={draft.perfil} onValueChange={(value) => setDraft((current) => ({ ...current, perfil: value as Filters["perfil"] }))}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue>{draft.perfil === "TODOS" ? "Todos os perfis" : PROFILE_LABELS[draft.perfil]}</SelectValue></SelectTrigger>
           <SelectContent>
             <SelectItem value="TODOS">Todos os perfis</SelectItem>
             {Object.entries(PROFILE_LABELS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={draft.ativo} onValueChange={(value) => setDraft((current) => ({ ...current, ativo: value as Filters["ativo"] }))}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue>{{ TODOS: "Todos os status", ATIVOS: "Ativos", INATIVOS: "Inativos" }[draft.ativo]}</SelectValue></SelectTrigger>
           <SelectContent><SelectItem value="TODOS">Todos os status</SelectItem><SelectItem value="ATIVOS">Ativos</SelectItem><SelectItem value="INATIVOS">Inativos</SelectItem></SelectContent>
         </Select>
         <Select value={draft.setorId} onValueChange={(value) => setDraft((current) => ({ ...current, setorId: value ?? "TODOS" }))}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue>{setores.find((setor) => setor.id === draft.setorId)?.nome ?? "Todos os setores"}</SelectValue></SelectTrigger>
           <SelectContent><SelectItem value="TODOS">Todos os setores</SelectItem>{setores.map((setor) => <SelectItem key={setor.id} value={setor.id}>{setor.nome}</SelectItem>)}</SelectContent>
         </Select>
         <Button type="submit" variant="outline"><Search aria-hidden="true" /> Filtrar</Button>
@@ -222,7 +222,7 @@ export function UsuariosScreen() {
 
       {error ? <div className="mt-5 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">{error}</div> : null}
 
-      <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Lista de usuários">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Lista de usuários">
         {loading ? (
           <div className="space-y-3 p-5">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-14 w-full" />)}</div>
         ) : result && result.dados.length > 0 ? (
@@ -259,7 +259,7 @@ export function UsuariosScreen() {
 
       {confirmation ? <Dialog open onOpenChange={(open) => !open && setConfirmation(null)}><DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle>{confirmation.kind === "senha" ? "Redefinir senha" : confirmation.usuario.ativo ? "Desativar usuário" : "Ativar usuário"}</DialogTitle><DialogDescription>{confirmation.kind === "senha" ? `Uma nova senha temporária será gerada para ${confirmation.usuario.nome} e todas as sessões atuais serão encerradas.` : `${confirmation.usuario.nome} será ${confirmation.usuario.ativo ? "desativado e terá as sessões encerradas" : "reativado"}.`}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={() => setConfirmation(null)} disabled={acting}>Cancelar</Button><Button onClick={confirmAction} disabled={acting}>{acting ? "Aguarde..." : "Confirmar"}</Button></DialogFooter></DialogContent></Dialog> : null}
 
-      {temporaryPassword ? <Dialog open onOpenChange={(open) => !open && setTemporaryPassword(null)}><DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle>Senha temporária gerada</DialogTitle><DialogDescription>Esta senha é exibida uma única vez. Entregue-a ao usuário por um canal seguro.</DialogDescription></DialogHeader><div className="rounded-lg bg-muted px-4 py-3 text-center font-mono text-lg font-semibold tracking-wider" aria-label="Senha temporária">{temporaryPassword}</div><DialogFooter><Button onClick={() => setTemporaryPassword(null)}>Entendi</Button></DialogFooter></DialogContent></Dialog> : null}
+      {temporaryPassword ? <Dialog open onOpenChange={(open) => !open && setTemporaryPassword(null)}><DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle>Senha temporária gerada</DialogTitle><DialogDescription>Esta senha é exibida uma única vez. Entregue-a ao usuário por um canal seguro.</DialogDescription></DialogHeader><div className="rounded-lg bg-muted px-4 py-3 text-center text-lg font-semibold" aria-label="Senha temporária">{temporaryPassword}</div><DialogFooter><Button onClick={() => setTemporaryPassword(null)}>Entendi</Button></DialogFooter></DialogContent></Dialog> : null}
     </div>
   );
 }

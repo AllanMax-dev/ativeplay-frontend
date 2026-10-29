@@ -190,7 +190,7 @@ export function SenhasPanel({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border bg-background" aria-labelledby="passwords-title">
+    <section className="overflow-hidden rounded-xl border bg-card" aria-labelledby="passwords-title">
       <div className="flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
           <h2 id="passwords-title" className="font-semibold">Cadastro de senhas salvas</h2>
@@ -299,7 +299,7 @@ export function SenhasPanel({
                           type="button"
                           onClick={() => void copySecret(item)}
                           disabled={loadingSecret === item.id}
-                          className="group inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 font-mono text-sm hover:bg-muted disabled:opacity-50"
+                          className="group inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm hover:bg-muted disabled:opacity-50"
                           title="Clique para copiar a senha"
                         >
                           <span>{secret ?? "••••••••"}</span>

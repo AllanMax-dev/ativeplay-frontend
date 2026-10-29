@@ -193,7 +193,9 @@ export function EmpresaFormDialog({
                 }
               >
                 <SelectTrigger className="h-10 w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {REGIMES.find((regime) => regime.value === form.regimeTributario)?.label ?? "Não informado"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="NAO_INFORMADO">Não informado</SelectItem>

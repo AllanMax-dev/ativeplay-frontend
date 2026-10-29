@@ -121,7 +121,7 @@ export function SetoresScreen() {
       {!canWrite ? <div className="mt-6 rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">Você pode consultar os setores, mas não alterá-los.</div> : null}
       {error ? <div className="mt-5 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">{error}</div> : null}
 
-      <section className="mt-6 overflow-hidden rounded-xl border bg-background" aria-label="Lista de setores">
+      <section className="mt-6 overflow-hidden rounded-xl border bg-card" aria-label="Lista de setores">
         {loading ? <div className="space-y-3 p-5">{Array.from({ length: 5 }, (_, index) => <Skeleton key={index} className="h-16 w-full" />)}</div> : setores.length > 0 ? (
           <div className="divide-y">{setores.map((setor, index) => (
             <article key={setor.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:px-5">

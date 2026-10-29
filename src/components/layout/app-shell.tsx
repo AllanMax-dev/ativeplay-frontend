@@ -23,7 +23,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ContadorGeralHeader } from "@/components/sessao/contador-geral";
+import { ContadorGeralHeader, ContadorGeralSidebar } from "@/components/sessao/contador-geral";
 import { SessaoProvider } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -99,11 +99,14 @@ function SidebarContent({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-4 py-5">
+      <div className="px-4 pb-4 pt-5">
         <Brand officeName={me.escritorio.nome} />
       </div>
+      <div className="px-3 pb-4">
+        <ContadorGeralSidebar />
+      </div>
       <Separator className="bg-sidebar-border" />
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Menu principal">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4" aria-label="Menu principal">
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = item.href === pathname;
@@ -111,7 +114,7 @@ function SidebarContent({
             return (
               <div
                 key={item.label}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/45"
+                className="flex h-8 items-center gap-3 rounded-lg px-3 text-sm text-sidebar-foreground/45"
                 title="Disponível nas próximas fases"
                 aria-disabled="true"
               >
@@ -128,7 +131,7 @@ function SidebarContent({
               href={item.href}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-full px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex h-8 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
                 active
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground/75 hover:bg-sidebar-accent/55 hover:text-sidebar-foreground"
@@ -206,7 +209,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-12 items-center gap-3 bg-background px-4 sm:px-6 lg:h-16 lg:px-10">
+        <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:hidden">
           <Button
             type="button"
             variant="outline"
@@ -223,7 +226,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <ContadorGeralHeader />
         </header>
-        <main className="mx-auto w-full max-w-[100rem] px-4 py-7 sm:px-6 lg:px-10 lg:pb-12 lg:pt-6">{children}</main>
+        <main className="mx-auto w-full max-w-[100rem] px-4 py-7 sm:px-6 lg:px-10 lg:pb-12 lg:pt-9">{children}</main>
       </div>
     </div>
     </SessaoProvider>

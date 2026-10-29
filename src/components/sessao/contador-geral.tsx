@@ -28,11 +28,11 @@ export function ContadorGeralHeader() {
 
   return (
     <div
-      className="flex min-w-0 items-center gap-2 rounded-full bg-primary py-1 pr-1 pl-3 text-primary-foreground"
+      className="flex min-w-0 items-center gap-2 rounded-full bg-accent py-1 pr-1 pl-3 text-accent-foreground"
       role="timer"
       aria-label={`Contador geral em ${atual.empresaNome ?? "empresa"}: ${formatClock(atualMs)}`}
     >
-      <span className="size-2 shrink-0 rounded-full bg-primary-foreground" aria-hidden="true" />
+      <span className="size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
       <Link
         href={`/tarefas?empresa=${atual.empresaId}`}
         className="hidden max-w-40 truncate text-xs font-medium hover:underline sm:inline"
@@ -45,7 +45,7 @@ export function ContadorGeralHeader() {
         <Button
           size="xs"
           variant="ghost"
-          className="text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground"
+          className="text-accent-foreground hover:bg-primary/10 hover:text-accent-foreground"
           onClick={() => void finalizar()}
           disabled={busy}
           title="Finalizar empresa (para o contador geral)"
@@ -55,6 +55,69 @@ export function ContadorGeralHeader() {
         </Button>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Versão do contador geral para a barra lateral (telas grandes): sempre visível, com o relógio
+ * em destaque. Mesmos dados e ações do indicador do topo.
+ */
+export function ContadorGeralSidebar() {
+  const { enabled, canControl, atual, busy, finalizar, loading } = useSessao();
+  const { atualMs, totalHojeMs } = useTemposSessao();
+  if (!enabled || loading) return null;
+
+  return (
+    <section
+      className={`rounded-xl px-3 py-3 ${atual ? "bg-sidebar-accent text-sidebar-accent-foreground" : "border border-sidebar-border"}`}
+      role={atual ? "timer" : undefined}
+      aria-label={
+        atual
+          ? `Contador geral em ${atual.empresaNome ?? "empresa"}: ${formatClock(atualMs)}`
+          : "Contador geral"
+      }
+    >
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="flex items-center gap-1.5 font-medium">
+          {atual ? (
+            <span className="size-2 rounded-full bg-sidebar-primary" aria-hidden="true" />
+          ) : (
+            <TimerOff className="size-3.5 text-muted-foreground" aria-hidden="true" />
+          )}
+          Contador geral
+        </span>
+        <span className="tabular-nums text-muted-foreground">Hoje {formatHoursMinutes(totalHojeMs)}</span>
+      </div>
+      {atual ? (
+        <>
+          <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] tabular-nums">{formatClock(atualMs)}</p>
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <Link
+              href={`/tarefas?empresa=${atual.empresaId}`}
+              className="min-w-0 truncate text-sm hover:underline"
+              title="Abrir a empresa em Tarefas do dia"
+            >
+              {atual.empresaNome}
+            </Link>
+            {canControl ? (
+              <Button
+                size="xs"
+                variant="ghost"
+                className="shrink-0 text-sidebar-accent-foreground hover:bg-primary/10 hover:text-sidebar-accent-foreground"
+                onClick={() => void finalizar()}
+                disabled={busy}
+                title="Finalizar empresa (para o contador geral)"
+              >
+                <CirclePause aria-hidden="true" />
+                Finalizar
+              </Button>
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <p className="mt-2 text-sm text-muted-foreground">Nenhuma empresa aberta</p>
+      )}
+    </section>
   );
 }
 

@@ -131,6 +131,41 @@ export function EmpresasScreen() {
 
   const totalPages = result ? Math.max(1, Math.ceil(result.total / result.porPagina)) : 1;
 
+  /** Ações da linha; no celular (compact) viram botões só com ícone. */
+  function renderActions(empresa: EmpresaResumo, compact = false) {
+    const opening = loadingDetailId === empresa.id;
+    return (
+      <div className="inline-flex shrink-0 items-center gap-1">
+        {canOpenTasks ? (
+          <Button
+            variant="ghost"
+            size={compact ? "icon-sm" : "sm"}
+            render={<Link href={`/tarefas?empresa=${empresa.id}`} />}
+            nativeButton={false}
+            title="Entrar no cliente: tarefas do dia, checklist e senhas salvas"
+            aria-label={compact ? "Abrir" : undefined}
+          >
+            <LogIn aria-hidden="true" />
+            {compact ? null : "Abrir"}
+          </Button>
+        ) : null}
+        {canWrite ? (
+          <Button
+            variant="ghost"
+            size={compact ? "icon-sm" : "sm"}
+            onClick={() => openEdit(empresa.id)}
+            disabled={opening}
+            aria-label={compact ? (opening ? "Abrindo..." : "Editar") : undefined}
+            title={compact ? (opening ? "Abrindo..." : "Editar") : undefined}
+          >
+            <Pencil aria-hidden="true" />
+            {compact ? null : opening ? "Abrindo..." : "Editar"}
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -172,6 +207,8 @@ export function EmpresasScreen() {
             ))}
           </div>
         ) : result && result.dados.length > 0 ? (
+          <>
+          <div className="hidden md:block">
           <Table className="min-w-[920px]">
             <TableHeader>
               <TableRow>
@@ -209,37 +246,35 @@ export function EmpresasScreen() {
                     </span>
                   </TableCell>
                   {showActions ? (
-                    <TableCell className="pr-5 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        {canOpenTasks ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            render={<Link href={`/tarefas?empresa=${empresa.id}`} />}
-                            nativeButton={false}
-                            title="Entrar no cliente: tarefas do dia, checklist e senhas salvas"
-                          >
-                            <LogIn aria-hidden="true" /> Abrir
-                          </Button>
-                        ) : null}
-                        {canWrite ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEdit(empresa.id)}
-                            disabled={loadingDetailId === empresa.id}
-                          >
-                            <Pencil aria-hidden="true" />
-                            {loadingDetailId === empresa.id ? "Abrindo..." : "Editar"}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </TableCell>
+                    <TableCell className="pr-5 text-right">{renderActions(empresa)}</TableCell>
                   ) : null}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          </div>
+          {/* No celular a tabela vira itens de duas linhas: identidade e honorário, depois o resto. */}
+          <ul className="divide-y md:hidden">
+            {result.dados.map((empresa) => (
+              <li key={empresa.id} className="flex items-center gap-2 py-3 pr-2 pl-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="truncate font-medium">{empresa.nomeFantasia || empresa.razaoSocial}</p>
+                    <span className="shrink-0 text-sm tabular-nums">{formatCurrency(empresa.honorarioMensal)}</span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
+                    {STATUS_LABELS[empresa.status]} · <span className="tabular-nums">{empresa.tarefasAbertasHoje} hoje</span> ·{" "}
+                    <span className={`tabular-nums ${empresa.tarefasAtrasadas > 0 ? "font-medium text-destructive" : ""}`}>
+                      {empresa.tarefasAtrasadas} atrasadas
+                    </span>{" "}
+                    · {empresa.responsavel?.nome ?? "Não definido"}
+                  </p>
+                </div>
+                {showActions ? renderActions(empresa, true) : null}
+              </li>
+            ))}
+          </ul>
+          </>
         ) : (
           <div className="px-6 py-14 text-center">
             <Building2 className="mx-auto size-10 text-muted-foreground" aria-hidden="true" />

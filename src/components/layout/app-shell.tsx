@@ -186,27 +186,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarContent onLogout={() => void handleLogout()} loggingOut={loggingOut} />
       </aside>
 
-      {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <aside className="relative h-full w-full bg-sidebar text-sidebar-foreground">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute right-3 top-4 text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={() => setMobileMenuOpen(false)}
-              aria-label="Fechar menu"
-            >
-              <X aria-hidden="true" />
-            </Button>
-            <SidebarContent
-              onNavigate={() => setMobileMenuOpen(false)}
-              onLogout={() => void handleLogout()}
-              loggingOut={loggingOut}
-            />
-          </aside>
-        </div>
-      ) : null}
+      {/* Sempre montado para poder animar a entrada e a saída; fechado, fica inerte e invisível. */}
+      <div
+        className={`fixed inset-0 z-40 transition-[translate,opacity,visibility] ease-(--ease-drawer) motion-reduce:translate-x-0 lg:hidden ${
+          mobileMenuOpen ? "visible duration-300" : "invisible -translate-x-full duration-200 motion-reduce:opacity-0"
+        }`}
+        inert={!mobileMenuOpen}
+      >
+        <aside className="relative h-full w-full bg-sidebar text-sidebar-foreground">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute right-3 top-4 text-sidebar-foreground hover:bg-sidebar-accent"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Fechar menu"
+          >
+            <X aria-hidden="true" />
+          </Button>
+          <SidebarContent
+            onNavigate={() => setMobileMenuOpen(false)}
+            onLogout={() => void handleLogout()}
+            loggingOut={loggingOut}
+          />
+        </aside>
+      </div>
 
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:hidden">

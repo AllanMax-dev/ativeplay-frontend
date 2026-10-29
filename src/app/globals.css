@@ -48,6 +48,8 @@
 }
 
 :root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --font-app-sans: var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --background: oklch(0.976 0.012 168);
   --foreground: oklch(0.2 0.025 182);
@@ -133,5 +135,28 @@
   }
   * {
     scrollbar-color: var(--border) transparent;
+  }
+}
+
+/* Movimento: curto e sutil (sistema usado o dia todo). Só opacity e transform. */
+@keyframes fade-in-soft {
+  from {
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  /* Conteúdo que troca no lugar (abas): aparece em vez de surgir de repente. */
+  .motion-fade-in {
+    animation: fade-in-soft 160ms var(--ease-out);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Menos movimento: mantém os fades e tira escala e deslocamento. */
+  *,
+  ::before,
+  ::after {
+    scale: none !important;
   }
 }

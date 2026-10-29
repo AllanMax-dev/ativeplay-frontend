@@ -190,6 +190,17 @@ export function UsuariosScreen() {
 
   const totalPages = result ? Math.max(1, Math.ceil(result.total / result.porPagina)) : 1;
 
+  /** Ações da linha, iguais na tabela e na lista do celular. */
+  function renderActions(usuario: UsuarioLista) {
+    return (
+      <div className="flex shrink-0 justify-end gap-1">
+        <Button variant="ghost" size="icon-sm" aria-label={`Editar ${usuario.nome}`} onClick={() => openEdit(usuario.id)} disabled={loadingDetailId === usuario.id}><Pencil aria-hidden="true" /></Button>
+        <Button variant="ghost" size="icon-sm" aria-label={`Redefinir senha de ${usuario.nome}`} onClick={() => setConfirmation({ kind: "senha", usuario })}><KeyRound aria-hidden="true" /></Button>
+        <Button variant="ghost" size="icon-sm" aria-label={`${usuario.ativo ? "Desativar" : "Ativar"} ${usuario.nome}`} onClick={() => setConfirmation({ kind: "ativo", usuario })} disabled={usuario.id === me?.id}>{usuario.ativo ? <UserRoundX aria-hidden="true" /> : <UserCheck aria-hidden="true" />}</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -226,6 +237,8 @@ export function UsuariosScreen() {
         {loading ? (
           <div className="space-y-3 p-5">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-14 w-full" />)}</div>
         ) : result && result.dados.length > 0 ? (
+          <>
+          <div className="hidden md:block">
           <Table className="min-w-[980px]">
             <TableHeader><TableRow><TableHead className="pl-5">Usuário</TableHead><TableHead>Perfil</TableHead><TableHead>Setores</TableHead><TableHead>Carteira</TableHead><TableHead>Último acesso</TableHead><TableHead>Status</TableHead>{canWrite ? <TableHead className="pr-5 text-right">Ações</TableHead> : null}</TableRow></TableHeader>
             <TableBody>
@@ -238,16 +251,34 @@ export function UsuariosScreen() {
                   <TableCell className="tabular-nums">{usuario.ultimoAcesso ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(usuario.ultimoAcesso)) : "Nunca"}</TableCell>
                   <TableCell><Badge variant={usuario.ativo ? "secondary" : "outline"}>{usuario.ativo ? "Ativo" : "Inativo"}</Badge></TableCell>
                   {canWrite ? (
-                    <TableCell className="pr-5"><div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon-sm" aria-label={`Editar ${usuario.nome}`} onClick={() => openEdit(usuario.id)} disabled={loadingDetailId === usuario.id}><Pencil aria-hidden="true" /></Button>
-                      <Button variant="ghost" size="icon-sm" aria-label={`Redefinir senha de ${usuario.nome}`} onClick={() => setConfirmation({ kind: "senha", usuario })}><KeyRound aria-hidden="true" /></Button>
-                      <Button variant="ghost" size="icon-sm" aria-label={`${usuario.ativo ? "Desativar" : "Ativar"} ${usuario.nome}`} onClick={() => setConfirmation({ kind: "ativo", usuario })} disabled={usuario.id === me?.id}>{usuario.ativo ? <UserRoundX aria-hidden="true" /> : <UserCheck aria-hidden="true" />}</Button>
-                    </div></TableCell>
+                    <TableCell className="pr-5">{renderActions(usuario)}</TableCell>
                   ) : null}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          </div>
+          {/* No celular a tabela vira itens de duas linhas. */}
+          <ul className="divide-y md:hidden">
+            {result.dados.map((usuario) => (
+              <li key={usuario.id} className="flex items-center gap-2 py-3 pr-2 pl-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="truncate font-medium">{usuario.nome}</p>
+                    <Badge variant={usuario.ativo ? "secondary" : "outline"}>{usuario.ativo ? "Ativo" : "Inativo"}</Badge>
+                  </div>
+                  <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
+                    {PROFILE_LABELS[usuario.perfil]}
+                    {usuario.perfil === "OPERADOR" ? <span className="tabular-nums"> · {usuario.empresasNaCarteira} empresa(s)</span> : null}
+                    {" · "}
+                    {usuario.email}
+                  </p>
+                </div>
+                {canWrite ? renderActions(usuario) : null}
+              </li>
+            ))}
+          </ul>
+          </>
         ) : (
           <div className="px-6 py-14 text-center"><Users className="mx-auto size-10 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 font-semibold">Nenhum usuário encontrado</h2><p className="mt-2 text-sm text-muted-foreground">Ajuste os filtros para consultar outros acessos.</p></div>
         )}

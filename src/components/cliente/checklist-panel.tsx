@@ -210,23 +210,42 @@ export function ChecklistPanel({
         <ul className="divide-y" role="tabpanel">
           {visible.map((item) => {
             const busy = busyId === item.id;
+            const hasOpenSubitem = item.subitens.some((sub) => !sub.concluido);
+            const completionBlocked = !item.concluido && hasOpenSubitem;
             return (
               <li key={item.id} className="flex gap-4 p-5 sm:px-6">
                 {canWrite ? (
+                  <span
+                    className="mt-0.5 shrink-0"
+                    tabIndex={completionBlocked ? 0 : undefined}
+                    aria-label={completionBlocked ? "Conclua todos os sub-itens antes de concluir o item" : undefined}
+                    title={completionBlocked ? "Conclua todos os sub-itens antes de concluir o item" : undefined}
+                  >
                   <button
                     type="button"
                     onClick={() => toggleItem(item)}
-                    disabled={busy}
-                    className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border-2 transition-colors disabled:opacity-50 ${
+                    disabled={busy || completionBlocked}
+                    className={`grid size-8 place-items-center rounded-full border-2 transition-colors disabled:opacity-50 ${
                       item.concluido
                         ? "border-primary bg-primary text-primary-foreground hover:bg-primary/80"
                         : "border-primary/40 text-primary/50 hover:border-primary hover:text-primary"
                     }`}
-                    aria-label={item.concluido ? `Reabrir ${item.titulo}` : `Concluir ${item.titulo}`}
-                    title={item.concluido ? "Reabrir" : "Concluir"}
+                    aria-label={
+                      item.concluido
+                        ? `Reabrir ${item.titulo}`
+                        : completionBlocked
+                          ? `Conclua todos os sub-itens antes de concluir ${item.titulo}`
+                          : `Concluir ${item.titulo}`
+                    }
+                    title={
+                      item.concluido
+                        ? "Reabrir"
+                        : completionBlocked ? undefined : "Concluir"
+                    }
                   >
                     {item.concluido ? <RotateCcw className="size-4" aria-hidden="true" /> : <CheckCircle2 className="size-4" aria-hidden="true" />}
                   </button>
+                  </span>
                 ) : null}
 
                 <div className="min-w-0 flex-1">
@@ -258,10 +277,10 @@ export function ChecklistPanel({
                     <ul className="mt-3 space-y-1.5">
                       {item.subitens.map((sub) => (
                         <li key={sub.id}>
-                          <label className={`flex items-center gap-2 text-sm ${canWrite ? "cursor-pointer" : ""}`}>
+                          <label className={`flex items-center gap-2 text-sm ${canWrite && !item.concluido ? "cursor-pointer" : ""}`}>
                             <Checkbox
                               checked={sub.concluido}
-                              disabled={!canWrite || busy}
+                              disabled={!canWrite || busy || item.concluido}
                               onCheckedChange={(checked) => toggleSubitem(item, sub.id, checked)}
                             />
                             <span className={sub.concluido ? "text-muted-foreground line-through" : ""}>{sub.texto}</span>

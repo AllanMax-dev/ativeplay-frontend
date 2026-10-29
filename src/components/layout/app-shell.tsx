@@ -11,6 +11,7 @@ import {
   History,
   House,
   Layers3,
+  ListChecks,
   LogOut,
   Menu,
   Repeat2,
@@ -34,12 +35,14 @@ interface NavigationItem {
   href?: string;
   icon: LucideIcon;
   modulo?: Modulo;
+  perfis?: Perfil[];
 }
 
 const OPERATION_NAVIGATION: NavigationItem[] = [
   { label: "Painel", href: "/inicio", icon: House, modulo: "PAINEL" },
   { label: "Empresas", href: "/empresas", icon: Building2, modulo: "EMPRESAS" },
   { label: "Tarefas do dia", href: "/tarefas", icon: CheckSquare2, modulo: "TAREFAS" },
+  { label: "Checklist modelo", href: "/tarefas/checklist-modelo", icon: ListChecks, modulo: "TAREFAS", perfis: ["ADMIN", "GESTOR"] },
   { label: "Padrões", href: "/tarefas/padroes", icon: ClipboardList, modulo: "TAREFAS" },
   { label: "Rotinas", href: "/tarefas/rotinas", icon: Repeat2, modulo: "TAREFAS" },
   { label: "CRM", icon: BriefcaseBusiness, modulo: "CRM" },
@@ -80,7 +83,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     me.perfil === "CLIENTE"
       ? [{ label: "Portal", href: "/portal", icon: House }]
       : OPERATION_NAVIGATION.filter(
-          (item) => item.modulo && canReadModule(me, item.modulo),
+          (item) =>
+            item.modulo &&
+            canReadModule(me, item.modulo) &&
+            (!item.perfis || item.perfis.includes(me.perfil)),
         );
 
   return (

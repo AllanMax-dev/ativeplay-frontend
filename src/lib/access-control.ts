@@ -1,13 +1,15 @@
-import type { MeResponse, Modulo } from "@/types/api";
+import type { MeResponse, Modulo, Perfil } from "@/types/api";
 
 export interface AppRoute {
   path: string;
   modulo: Modulo;
+  perfis?: Perfil[];
 }
 
 export const APP_ROUTES: AppRoute[] = [
   { path: "/inicio", modulo: "PAINEL" },
   { path: "/empresas", modulo: "EMPRESAS" },
+  { path: "/tarefas/checklist-modelo", modulo: "TAREFAS", perfis: ["ADMIN", "GESTOR"] },
   { path: "/tarefas", modulo: "TAREFAS" },
   { path: "/usuarios", modulo: "USUARIOS" },
   { path: "/setores", modulo: "CONFIGURACOES" },
@@ -35,7 +37,9 @@ export function canWriteModule(me: MeResponse, modulo: Modulo): boolean {
 
 export function defaultAuthenticatedRoute(me: MeResponse): string {
   if (me.perfil === "CLIENTE") return "/portal";
-  return APP_ROUTES.find((route) => canReadModule(me, route.modulo))?.path ?? "/sem-acesso";
+  return APP_ROUTES.find(
+    (route) => canReadModule(me, route.modulo) && (!route.perfis || route.perfis.includes(me.perfil)),
+  )?.path ?? "/sem-acesso";
 }
 
 export function canAccessPath(me: MeResponse, pathname: string): boolean {
@@ -49,5 +53,7 @@ export function canAccessPath(me: MeResponse, pathname: string): boolean {
     (candidate) =>
       pathname === candidate.path || pathname.startsWith(`${candidate.path}/`),
   );
-  return route ? canReadModule(me, route.modulo) : false;
+  return route
+    ? canReadModule(me, route.modulo) && (!route.perfis || route.perfis.includes(me.perfil))
+    : false;
 }

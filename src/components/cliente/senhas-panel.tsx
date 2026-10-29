@@ -189,6 +189,113 @@ export function SenhasPanel({
     }
   }
 
+  /** Células da senha, iguais na tabela e na lista do celular. */
+  function renderUsuario(item: SenhaSalva) {
+    const userCopied = copied === `usuario:${item.id}`;
+    return (
+      item.usuario ? (
+        <button
+          type="button"
+          onClick={() => void copyUser(item)}
+          className="group inline-flex max-w-64 items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm hover:bg-muted"
+          title="Clique para copiar o usuário"
+        >
+          <span className="truncate">{item.usuario}</span>
+          {userCopied ? (
+            <Check className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          ) : (
+            <Copy className="size-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" aria-hidden="true" />
+          )}
+          <span className="sr-only">{userCopied ? "Copiado" : "Copiar usuário"}</span>
+        </button>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )
+    );
+  }
+
+  function renderSenha(item: SenhaSalva) {
+    const secret = revealed[item.id];
+    const secretCopied = copied === `senha:${item.id}`;
+    return (
+      item.possuiSenha ? (
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => void copySecret(item)}
+            disabled={loadingSecret === item.id}
+            className="group inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm hover:bg-muted disabled:opacity-50"
+            title="Clique para copiar a senha"
+          >
+            <span>{secret ?? "••••••••"}</span>
+            {secretCopied ? (
+              <Check className="size-3.5 text-primary" aria-hidden="true" />
+            ) : (
+              <Copy className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100" aria-hidden="true" />
+            )}
+            <span className="sr-only">{secretCopied ? "Copiada" : "Copiar senha"}</span>
+          </button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => void toggleReveal(item)}
+            disabled={loadingSecret === item.id}
+            aria-label={secret !== undefined ? "Ocultar senha" : "Mostrar senha"}
+            title={secret !== undefined ? "Ocultar" : "Mostrar por 20 segundos"}
+          >
+            {secret !== undefined ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+          </Button>
+        </div>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+          <LockKeyhole className="size-3.5" aria-hidden="true" /> Sem senha
+        </span>
+      )
+    );
+  }
+
+  function renderAcoes(item: SenhaSalva) {
+    return (
+      <div className="inline-flex items-center gap-1">
+        {item.url ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            render={<a href={item.url} target="_blank" rel="noopener noreferrer" />}
+            nativeButton={false}
+            aria-label={`Abrir ${item.acesso}`}
+            title="Abrir link de acesso"
+          >
+            <ExternalLink aria-hidden="true" />
+          </Button>
+        ) : null}
+        {canWrite ? (
+          <>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => { setEditing(item); setFormOpen(true); }}
+              aria-label={`Editar ${item.acesso}`}
+              title="Editar"
+            >
+              <Pencil aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDeleting(item)}
+              aria-label={`Excluir ${item.acesso}`}
+              title="Excluir"
+            >
+              <Trash2 aria-hidden="true" />
+            </Button>
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <section className="overflow-hidden rounded-xl border bg-card" aria-labelledby="passwords-title">
       <div className="flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -245,6 +352,8 @@ export function SenhasPanel({
           {Array.from({ length: 4 }, (_, index) => <Skeleton key={index} className="h-11 w-full" />)}
         </div>
       ) : filtered.length > 0 ? (
+        <>
+        <div className="hidden md:block">
         <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow>
@@ -255,11 +364,7 @@ export function SenhasPanel({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((item) => {
-              const secret = revealed[item.id];
-              const userCopied = copied === `usuario:${item.id}`;
-              const secretCopied = copied === `senha:${item.id}`;
-              return (
+            {filtered.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="pl-5 sm:pl-6">
                     <p className="font-medium">{item.acesso}</p>
@@ -272,105 +377,33 @@ export function SenhasPanel({
                       ) : null}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    {item.usuario ? (
-                      <button
-                        type="button"
-                        onClick={() => void copyUser(item)}
-                        className="group inline-flex max-w-64 items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm hover:bg-muted"
-                        title="Clique para copiar o usuário"
-                      >
-                        <span className="truncate">{item.usuario}</span>
-                        {userCopied ? (
-                          <Check className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
-                        ) : (
-                          <Copy className="size-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100" aria-hidden="true" />
-                        )}
-                        <span className="sr-only">{userCopied ? "Copiado" : "Copiar usuário"}</span>
-                      </button>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {item.possuiSenha ? (
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => void copySecret(item)}
-                          disabled={loadingSecret === item.id}
-                          className="group inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm hover:bg-muted disabled:opacity-50"
-                          title="Clique para copiar a senha"
-                        >
-                          <span>{secret ?? "••••••••"}</span>
-                          {secretCopied ? (
-                            <Check className="size-3.5 text-primary" aria-hidden="true" />
-                          ) : (
-                            <Copy className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100" aria-hidden="true" />
-                          )}
-                          <span className="sr-only">{secretCopied ? "Copiada" : "Copiar senha"}</span>
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => void toggleReveal(item)}
-                          disabled={loadingSecret === item.id}
-                          aria-label={secret !== undefined ? "Ocultar senha" : "Mostrar senha"}
-                          title={secret !== undefined ? "Ocultar" : "Mostrar por 20 segundos"}
-                        >
-                          {secret !== undefined ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-                        </Button>
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-                        <LockKeyhole className="size-3.5" aria-hidden="true" /> Sem senha
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="pr-5 text-right sm:pr-6">
-                    <div className="inline-flex items-center gap-1">
-                      {item.url ? (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          render={<a href={item.url} target="_blank" rel="noopener noreferrer" />}
-                          nativeButton={false}
-                          aria-label={`Abrir ${item.acesso}`}
-                          title="Abrir link de acesso"
-                        >
-                          <ExternalLink aria-hidden="true" />
-                        </Button>
-                      ) : null}
-                      {canWrite ? (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => { setEditing(item); setFormOpen(true); }}
-                            aria-label={`Editar ${item.acesso}`}
-                            title="Editar"
-                          >
-                            <Pencil aria-hidden="true" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => setDeleting(item)}
-                            aria-label={`Excluir ${item.acesso}`}
-                            title="Excluir"
-                          >
-                            <Trash2 aria-hidden="true" />
-                          </Button>
-                        </>
-                      ) : null}
-                    </div>
-                  </TableCell>
+                  <TableCell>{renderUsuario(item)}</TableCell>
+                  <TableCell>{renderSenha(item)}</TableCell>
+                  <TableCell className="pr-5 text-right sm:pr-6">{renderAcoes(item)}</TableCell>
                 </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
+        </div>
+        {/* No celular a tabela vira itens de duas linhas: acesso e categoria, depois usuário e senha. */}
+        <ul className="divide-y md:hidden">
+          {filtered.map((item) => (
+            <li key={item.id} className="flex items-start gap-2 py-3 pr-2 pl-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="truncate font-medium">{item.acesso}</p>
+                  <Badge variant="outline">{CATEGORIA_LABELS[item.categoria]}</Badge>
+                </div>
+                <div className="mt-1 -ml-1.5 flex flex-wrap items-center gap-x-2 text-[13px] text-muted-foreground">
+                  {renderUsuario(item)}
+                  {renderSenha(item)}
+                </div>
+              </div>
+              {renderAcoes(item)}
+            </li>
+          ))}
+        </ul>
+        </>
       ) : (
         <div className="px-6 py-14 text-center">
           <KeyRound className="mx-auto size-10 text-muted-foreground" aria-hidden="true" />

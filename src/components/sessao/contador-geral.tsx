@@ -4,7 +4,57 @@ import { Building2, CirclePause, Play, Timer, TimerOff } from "lucide-react";
 import Link from "next/link";
 import { useSessao, useTemposSessao } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
-import { formatClock, formatHoursMinutes } from "@/lib/format";
+import { companyDisplayName, formatClock, formatHoursMinutes } from "@/lib/format";
+
+/**
+ * Faixa de alerta no topo do conteúdo, só com contador rodando: diz o que está aberto e oferece
+ * as mesmas ações do aviso de saída. Não repete o relógio (ele já está no contador geral).
+ */
+export function FaixaContadorRodando() {
+  const { enabled, canControl, atual, tarefasRodando, busy, finalizar, pausarTarefa, pausando } = useSessao();
+  if (!enabled || (!atual && tarefasRodando.length === 0)) return null;
+  const tarefa = tarefasRodando[0] ?? null;
+
+  return (
+    <div role="status" className="motion-fade-in sticky top-12 z-10 border-b bg-card lg:top-0">
+      <div className="mx-auto flex w-full max-w-[100rem] flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:gap-4 sm:px-6 lg:px-10">
+        <p className="flex min-w-0 flex-1 items-baseline gap-2.5 text-sm leading-5">
+          <span className="size-2 shrink-0 translate-y-[-1px] rounded-full bg-primary" aria-hidden="true" />
+          <span className="min-w-0 text-pretty">
+            <span className="font-semibold">Contador rodando:</span>{" "}
+            {atual ? (
+              <>
+                empresa <span className="font-medium">{atual.empresaNome ?? "aberta"}</span>
+              </>
+            ) : null}
+            {atual && tarefa ? " e " : null}
+            {tarefa ? (
+              <>
+                atividade <span className="font-medium">{tarefa.titulo}</span>
+                {atual?.empresaId !== tarefa.empresa.id ? ` (${companyDisplayName(tarefa.empresa)})` : null}
+              </>
+            ) : null}
+            . <span className="text-muted-foreground">Finalize antes de sair.</span>
+          </span>
+        </p>
+        {canControl ? (
+          <div className="flex shrink-0 flex-wrap gap-2 pl-[1.125rem] sm:pl-0">
+            {tarefa ? (
+              <Button size="sm" variant="outline" onClick={() => void pausarTarefa(tarefa.id)} disabled={pausando !== null}>
+                <CirclePause aria-hidden="true" /> {pausando === tarefa.id ? "Pausando..." : "Pausar tarefa"}
+              </Button>
+            ) : null}
+            {atual ? (
+              <Button size="sm" variant="outline" onClick={() => void finalizar()} disabled={busy}>
+                <Building2 aria-hidden="true" /> {busy ? "Finalizando..." : "Finalizar empresa"}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 /**
  * Indicador compacto no topo da aplicação: a empresa aberta, o contador geral correndo e

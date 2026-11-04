@@ -67,7 +67,13 @@ interface SessaoContextValue {
   pedirSaida: (sair: () => void) => void;
   /** Muda quando o aviso de saída pausa uma tarefa, para as telas recarregarem suas listas. */
   tarefasVersao: number;
+  /** Pausa uma tarefa rodando (mesma ação do aviso de saída). */
+  pausarTarefa: (id: string) => Promise<void>;
+  /** Id da tarefa sendo pausada agora, ou null. */
+  pausando: string | null;
 }
+
+const PREFIXO_TITULO = "⏱ Contador rodando · ";
 
 const SessaoContext = createContext<SessaoContextValue | null>(null);
 
@@ -179,6 +185,27 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [bloqueiaSaida, enabled]);
 
+  // Título da aba com prefixo enquanto houver contador rodando. O Next reescreve o título ao
+  // navegar, então um observador reaplica o prefixo (sem duplicar) sempre que o título muda.
+  const prefixarTitulo = enabled && bloqueiaSaida;
+  useEffect(() => {
+    function aplicar(ativo: boolean) {
+      const base = document.title.startsWith(PREFIXO_TITULO)
+        ? document.title.slice(PREFIXO_TITULO.length)
+        : document.title;
+      const alvo = ativo ? PREFIXO_TITULO + base : base;
+      if (document.title !== alvo) document.title = alvo;
+    }
+    aplicar(prefixarTitulo);
+    if (!prefixarTitulo) return;
+    const observer = new MutationObserver(() => aplicar(true));
+    observer.observe(document.head, { subtree: true, childList: true, characterData: true });
+    return () => {
+      observer.disconnect();
+      aplicar(false);
+    };
+  }, [prefixarTitulo]);
+
   const pedirSaida = useCallback(
     (sair: () => void) => {
       if (enabled && bloqueiaSaida) setAvisoSaida({ sair });
@@ -280,8 +307,10 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
       tarefasRodando,
       pedirSaida,
       tarefasVersao,
+      pausarTarefa,
+      pausando,
     }),
-    [enabled, canControl, resumo, receivedAt, loading, busy, error, entrar, finalizar, refresh, tarefasRodando, pedirSaida, tarefasVersao],
+    [enabled, canControl, resumo, receivedAt, loading, busy, error, entrar, finalizar, refresh, tarefasRodando, pedirSaida, tarefasVersao, pausarTarefa, pausando],
   );
 
   return (

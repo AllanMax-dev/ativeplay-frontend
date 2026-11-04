@@ -23,7 +23,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ContadorGeralHeader, ContadorGeralSidebar } from "@/components/sessao/contador-geral";
+import { ContadorGeralHeader, ContadorGeralSidebar, FaixaContadorRodando } from "@/components/sessao/contador-geral";
 import { SessaoProvider, useSessao } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -231,6 +231,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <ContadorGeralHeader />
         </header>
+        <FaixaContadorRodando />
         <main className="mx-auto w-full max-w-[100rem] px-4 py-7 sm:px-6 lg:px-10 lg:pb-12 lg:pt-9">{children}</main>
       </div>
     </div>

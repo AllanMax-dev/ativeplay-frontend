@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightLeft, Building2 } from "lucide-react";
+import { ArrowRightLeft, Building2, CirclePause, ListChecks } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -21,8 +21,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { canReadModule, canWriteModule } from "@/lib/access-control";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, withQuery } from "@/lib/api";
+import { companyDisplayName } from "@/lib/format";
+import type { Pagina } from "@/types/api";
 import type { ResumoDia, SessaoTrabalho } from "@/types/cliente";
+import type { OcorrenciaTarefa } from "@/types/tarefa";
 
 /** Resultado de "entrar" em uma empresa. */
 export type EntradaResultado =
@@ -55,11 +58,29 @@ interface SessaoContextValue {
   finalizar: () => Promise<void>;
   refresh: () => Promise<void>;
   clearError: () => void;
+  /** Tarefas do usuário com o cronômetro rodando (o backend garante no máximo uma). */
+  tarefasRodando: OcorrenciaTarefa[];
+  /**
+   * Pede para sair do sistema. Sem contador rodando, chama `sair` na hora; com contador rodando,
+   * abre o aviso para finalizar tudo antes e só depois libera a saída.
+   */
+  pedirSaida: (sair: () => void) => void;
 }
 
 const SessaoContext = createContext<SessaoContextValue | null>(null);
 
 const REFRESH_INTERVAL_MS = 60_000;
+
+const TAREFAS_RODANDO_PATH = withQuery("/tarefas/ocorrencias", {
+  status: "EM_ANDAMENTO",
+  minhas: true,
+  porPagina: 20,
+});
+
+/** Aviso de saída: `sair` presente quando veio do botão Sair; ausente quando veio do fechamento da aba. */
+interface AvisoSaida {
+  sair?: () => void;
+}
 
 interface PendingSwitch {
   from: string;
@@ -78,6 +99,10 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingSwitch | null>(null);
   const resumoRef = useRef<ResumoDia | null>(null);
+  const [tarefasRodando, setTarefasRodando] = useState<OcorrenciaTarefa[]>([]);
+  const [avisoSaida, setAvisoSaida] = useState<AvisoSaida | null>(null);
+  const [pausando, setPausando] = useState<string | null>(null);
+  const bloqueiaSaida = Boolean(resumo?.atual) || tarefasRodando.length > 0;
 
   const applyResumo = useCallback((next: ResumoDia | null) => {
     resumoRef.current = next;
@@ -85,8 +110,18 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
     setReceivedAt(Date.now());
   }, []);
 
+  const loadTarefasRodando = useCallback(async () => {
+    try {
+      const pagina = await api.get<Pagina<OcorrenciaTarefa>>(TAREFAS_RODANDO_PATH);
+      setTarefasRodando(pagina.dados);
+    } catch {
+      // falha silenciosa; a próxima atualização corrige
+    }
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!enabled) return;
+    void loadTarefasRodando();
     try {
       applyResumo(await api.get<ResumoDia>("/sessoes/resumo"));
     } catch (cause) {
@@ -94,13 +129,14 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [applyResumo, enabled]);
+  }, [applyResumo, enabled, loadTarefasRodando]);
 
   useEffect(() => {
     if (!enabled) return;
     let active = true;
 
     function load() {
+      void loadTarefasRodando();
       api
         .get<ResumoDia>("/sessoes/resumo")
         .then((response) => {
@@ -125,7 +161,47 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [applyResumo, enabled]);
+  }, [applyResumo, enabled, loadTarefasRodando]);
+
+  // Fechar ou recarregar a aba com contador rodando: aviso nativo do navegador. Se a pessoa
+  // cancelar e continuar na página, o aviso da própria página já estará aberto com as ações.
+  useEffect(() => {
+    if (!enabled || !bloqueiaSaida) return;
+    function onBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+      event.returnValue = "";
+      setAvisoSaida((current) => current ?? {});
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [bloqueiaSaida, enabled]);
+
+  const pedirSaida = useCallback(
+    (sair: () => void) => {
+      if (enabled && bloqueiaSaida) setAvisoSaida({ sair });
+      else sair();
+    },
+    [bloqueiaSaida, enabled],
+  );
+
+  const pausarTarefa = useCallback(
+    async (id: string) => {
+      setPausando(id);
+      setError(null);
+      try {
+        await api.post<OcorrenciaTarefa>(`/tarefas/ocorrencias/${id}/pausar`);
+      } catch (cause) {
+        // 409 = já não estava rodando (ex.: pausada em outra aba); basta atualizar
+        if (!(cause instanceof ApiError && cause.status === 409)) {
+          setError(cause instanceof ApiError ? cause.message : "Não foi possível pausar a tarefa.");
+        }
+      } finally {
+        await loadTarefasRodando();
+        setPausando(null);
+      }
+    },
+    [loadTarefasRodando],
+  );
 
   const askSwitch = useCallback(
     (from: string, to: EmpresaAlvo) =>
@@ -197,8 +273,10 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
       finalizar,
       refresh,
       clearError: () => setError(null),
+      tarefasRodando,
+      pedirSaida,
     }),
-    [enabled, canControl, resumo, receivedAt, loading, busy, error, entrar, finalizar, refresh],
+    [enabled, canControl, resumo, receivedAt, loading, busy, error, entrar, finalizar, refresh, tarefasRodando, pedirSaida],
   );
 
   return (
@@ -242,6 +320,81 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
             </p>
             <DialogFooter>
               <Button variant="outline" onClick={() => resolvePending("cancelar")}>Fechar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ) : null}
+      {avisoSaida ? (
+        <Dialog open onOpenChange={(open) => !open && setAvisoSaida(null)}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{bloqueiaSaida ? "Encerre os cronômetros antes de sair" : "Tudo finalizado"}</DialogTitle>
+              <DialogDescription>
+                {bloqueiaSaida
+                  ? "Encerre o cronômetro da atividade e da empresa antes de sair do sistema."
+                  : avisoSaida.sair
+                    ? "Nenhum cronômetro está rodando. Você já pode sair."
+                    : "Nenhum cronômetro está rodando. Você já pode fechar a aba."}
+              </DialogDescription>
+            </DialogHeader>
+            {bloqueiaSaida ? (
+              <ul className="grid gap-3">
+                {tarefasRodando.map((tarefa) => (
+                  <li key={tarefa.id} className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-3">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <ListChecks className="size-3.5" aria-hidden="true" /> Atividade rodando
+                      </p>
+                      <p className="mt-1 truncate text-sm font-semibold">{tarefa.titulo}</p>
+                      <p className="truncate text-xs text-muted-foreground">{companyDisplayName(tarefa.empresa)}</p>
+                    </div>
+                    {canControl ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="shrink-0"
+                        onClick={() => void pausarTarefa(tarefa.id)}
+                        disabled={pausando !== null}
+                      >
+                        <CirclePause aria-hidden="true" /> {pausando === tarefa.id ? "Pausando..." : "Pausar tarefa"}
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+                {resumo?.atual ? (
+                  <li className="flex items-center justify-between gap-3 rounded-lg border bg-muted/40 p-3">
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <Building2 className="size-3.5" aria-hidden="true" /> Empresa aberta (contador geral)
+                      </p>
+                      <p className="mt-1 truncate text-sm font-semibold">{resumo.atual.empresaNome ?? "Empresa"}</p>
+                    </div>
+                    {canControl ? (
+                      <Button size="sm" variant="destructive" className="shrink-0" onClick={() => void finalizar()} disabled={busy}>
+                        <CirclePause aria-hidden="true" /> {busy ? "Finalizando..." : "Finalizar empresa"}
+                      </Button>
+                    ) : null}
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
+            {error ? (
+              <p className="text-sm text-destructive" role="alert">{error}</p>
+            ) : null}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAvisoSaida(null)}>Continuar no sistema</Button>
+              {avisoSaida.sair ? (
+                <Button
+                  onClick={() => {
+                    const sair = avisoSaida.sair;
+                    setAvisoSaida(null);
+                    sair?.();
+                  }}
+                  disabled={bloqueiaSaida}
+                >
+                  Sair
+                </Button>
+              ) : null}
             </DialogFooter>
           </DialogContent>
         </Dialog>

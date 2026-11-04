@@ -338,6 +338,7 @@ export function TarefasScreen() {
           : current,
       );
       setRevision((current) => current + 1);
+      void sessao.refresh();
     } catch (cause) {
       if (cause instanceof ApiError && cause.status === 409) {
         setError(

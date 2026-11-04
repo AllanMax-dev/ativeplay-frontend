@@ -24,7 +24,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { ContadorGeralHeader, ContadorGeralSidebar } from "@/components/sessao/contador-geral";
-import { SessaoProvider } from "@/components/sessao/sessao-provider";
+import { SessaoProvider, useSessao } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { canReadModule } from "@/lib/access-control";
@@ -86,6 +86,7 @@ function SidebarContent({
 }) {
   const pathname = usePathname();
   const { me } = useAuth();
+  const { pedirSaida } = useSessao();
   if (!me) return null;
   const navigation =
     me.perfil === "CLIENTE"
@@ -150,7 +151,7 @@ function SidebarContent({
           type="button"
           variant="ghost"
           className="mt-3 w-full justify-start px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
-          onClick={onLogout}
+          onClick={() => pedirSaida(onLogout)}
           disabled={loggingOut}
         >
           <LogOut aria-hidden="true" />

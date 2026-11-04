@@ -331,7 +331,11 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
               <DialogTitle>{bloqueiaSaida ? "Encerre os cronômetros antes de sair" : "Tudo finalizado"}</DialogTitle>
               <DialogDescription>
                 {bloqueiaSaida
-                  ? "Encerre o cronômetro da atividade e da empresa antes de sair do sistema."
+                  ? tarefasRodando.length > 0 && resumo?.atual
+                    ? "Encerre o cronômetro da atividade e da empresa antes de sair do sistema."
+                    : tarefasRodando.length > 0
+                      ? "Encerre o cronômetro da atividade antes de sair do sistema."
+                      : "Encerre o cronômetro da empresa antes de sair do sistema."
                   : avisoSaida.sair
                     ? "Nenhum cronômetro está rodando. Você já pode sair."
                     : "Nenhum cronômetro está rodando. Você já pode fechar a aba."}

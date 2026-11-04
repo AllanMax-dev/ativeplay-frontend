@@ -65,6 +65,8 @@ interface SessaoContextValue {
    * abre o aviso para finalizar tudo antes e só depois libera a saída.
    */
   pedirSaida: (sair: () => void) => void;
+  /** Muda quando o aviso de saída pausa uma tarefa, para as telas recarregarem suas listas. */
+  tarefasVersao: number;
 }
 
 const SessaoContext = createContext<SessaoContextValue | null>(null);
@@ -102,6 +104,7 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
   const [tarefasRodando, setTarefasRodando] = useState<OcorrenciaTarefa[]>([]);
   const [avisoSaida, setAvisoSaida] = useState<AvisoSaida | null>(null);
   const [pausando, setPausando] = useState<string | null>(null);
+  const [tarefasVersao, setTarefasVersao] = useState(0);
   const bloqueiaSaida = Boolean(resumo?.atual) || tarefasRodando.length > 0;
 
   const applyResumo = useCallback((next: ResumoDia | null) => {
@@ -198,6 +201,7 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
       } finally {
         await loadTarefasRodando();
         setPausando(null);
+        setTarefasVersao((current) => current + 1);
       }
     },
     [loadTarefasRodando],
@@ -275,8 +279,9 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
       clearError: () => setError(null),
       tarefasRodando,
       pedirSaida,
+      tarefasVersao,
     }),
-    [enabled, canControl, resumo, receivedAt, loading, busy, error, entrar, finalizar, refresh, tarefasRodando, pedirSaida],
+    [enabled, canControl, resumo, receivedAt, loading, busy, error, entrar, finalizar, refresh, tarefasRodando, pedirSaida, tarefasVersao],
   );
 
   return (

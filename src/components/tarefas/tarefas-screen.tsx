@@ -131,6 +131,8 @@ function ActionButton({
 export function TarefasScreen() {
   const { me } = useAuth();
   const sessao = useSessao();
+  // Recarrega a lista quando o aviso de saída pausa uma tarefa (só o pausarTarefa do provider muda isso).
+  const { tarefasVersao } = sessao;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -256,7 +258,7 @@ export function TarefasScreen() {
     return () => {
       active = false;
     };
-  }, [companyId, filters, onlyPortfolio, page, revision, seesAllCompanies]);
+  }, [companyId, filters, onlyPortfolio, page, revision, seesAllCompanies, tarefasVersao]);
 
   const refresh = useCallback(() => {
     setLoading(true);

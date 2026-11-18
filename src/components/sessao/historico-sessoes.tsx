@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -44,10 +43,7 @@ function formatarHora(data: string) {
   }).format(new Date(data));
 }
 
-export function HistoricoSessoes({
-  open,
-  onOpenChange,
-}: Props) {
+export function HistoricoSessoes({ open, onOpenChange }: Props) {
   const [sessoes, setSessoes] = useState<SessaoAcesso[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(false);
@@ -63,9 +59,7 @@ export function HistoricoSessoes({
       setErro(false);
 
       try {
-        const dados = await api.get<SessaoAcesso[]>(
-          "/sessoes-acesso"
-        );
+        const dados = await api.get<SessaoAcesso[]>("/sessoes-acesso");
 
         if (ativo) setSessoes(dados);
       } catch (error) {
@@ -85,8 +79,6 @@ export function HistoricoSessoes({
 
   useEffect(() => {
     if (!open) return;
-
-    setAgora(Date.now());
 
     const intervalo = window.setInterval(() => {
       setAgora(Date.now());
@@ -125,19 +117,14 @@ export function HistoricoSessoes({
             {sessoes.map((sessao) => {
               const emAndamento = !sessao.fim;
 
-              const inicioMs = new Date(
-                sessao.inicio
-              ).getTime();
+              const inicioMs = new Date(sessao.inicio).getTime();
 
               const duracaoMs = emAndamento
                 ? Math.max(0, agora - inicioMs)
                 : sessao.duracaoMs;
 
               return (
-                <div
-                  key={sessao.id}
-                  className="rounded-xl border bg-card p-4"
-                >
+                <div key={sessao.id} className="rounded-xl border bg-card p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold">
@@ -149,10 +136,7 @@ export function HistoricoSessoes({
                       </p>
 
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Saída:{" "}
-                        {sessao.fim
-                          ? formatarHora(sessao.fim)
-                          : "—"}
+                        Saída: {sessao.fim ? formatarHora(sessao.fim) : "—"}
                       </p>
                     </div>
 
@@ -164,9 +148,7 @@ export function HistoricoSessoes({
                             : "rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
                         }
                       >
-                        {emAndamento
-                          ? "Em andamento"
-                          : "Encerrada"}
+                        {emAndamento ? "Em andamento" : "Encerrada"}
                       </span>
 
                       <div className="flex items-center gap-1.5">

@@ -54,7 +54,7 @@ export function ContadorSessaoSidebar() {
     return () => {
       ativo = false;
     };
-  }, [status, me?.id]);
+  }, [status, me]);
 
   useEffect(() => {
     const intervalo = window.setInterval(() => {

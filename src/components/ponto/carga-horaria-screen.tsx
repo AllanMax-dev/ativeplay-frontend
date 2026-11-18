@@ -35,10 +35,12 @@ function shiftMonth(mes: string, delta: number): string {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+/** "2026-11" → "Novembro de 2026". */
 function formatMonth(mes: string): string {
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", month: "long", year: "numeric" }).format(
+  const texto = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", month: "long", year: "numeric" }).format(
     new Date(`${mes}-15T12:00:00Z`),
   );
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 /** "2026-11-05" → "qua., 05/11", sem deslocar o dia pelo fuso. */
@@ -51,7 +53,7 @@ function formatDay(data: string): string {
 function StatusRegistro({ registro }: { registro: RegistroPonto }) {
   if (registro.pendente) return <Badge className="bg-amber-100 text-amber-900">Pendente</Badge>;
   if (!registro.fim) return <Badge>Em andamento</Badge>;
-  return <Badge variant="secondary">Encerrado</Badge>;
+  return <Badge className="bg-muted text-muted-foreground">Encerrado</Badge>;
 }
 
 export function CargaHorariaScreen() {
@@ -163,7 +165,7 @@ export function CargaHorariaScreen() {
               value={mes}
               max={mesAtual}
               onChange={(event) => changeMonth(event.target.value)}
-              className="w-40"
+              className="w-48"
             />
           </div>
           <Button
@@ -186,7 +188,7 @@ export function CargaHorariaScreen() {
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
         <section aria-label="Funcionários" className={selectedId ? "hidden lg:block" : ""}>
-          <h2 className="mb-3 text-sm font-medium capitalize text-muted-foreground">{formatMonth(mes)}</h2>
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">{formatMonth(mes)}</h2>
           {loading && !equipe ? (
             <div className="space-y-2">
               {Array.from({ length: 5 }, (_, index) => (

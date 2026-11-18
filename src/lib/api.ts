@@ -1,6 +1,7 @@
 import {
   clearStoredSession,
   getStoredSession,
+  saveLoginNotice,
   saveStoredSession,
 } from "@/lib/auth-storage";
 import type {
@@ -13,6 +14,8 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api/v1";
 
 export const AUTH_EXPIRED_EVENT = "ativeplay:auth-expired";
+
+export const PONTO_ENCERRADO_MESSAGE = "Seu ponto foi encerrado. Entre novamente.";
 
 const STATUS_MESSAGES: Record<number, string> = {
   400: "Não foi possível processar os dados enviados.",
@@ -111,6 +114,10 @@ async function renewSession(): Promise<SessaoResponse> {
       return rotatedSession;
     })
     .catch((error: unknown) => {
+      // Renovação negada porque o ponto foi encerrado (login em outro aparelho ou registro pendente).
+      if (error instanceof ApiError && error.status === 401 && /encerrad/i.test(error.message)) {
+        saveLoginNotice(PONTO_ENCERRADO_MESSAGE);
+      }
       clearStoredSession();
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
       throw error;

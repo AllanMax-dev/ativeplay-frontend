@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { usePonto } from "@/components/sessao/ponto-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -98,6 +99,7 @@ interface PendingSwitch {
 
 export function SessaoProvider({ children }: { children: React.ReactNode }) {
   const { me } = useAuth();
+  const pontoAtivo = usePonto().registro !== null;
   const enabled = Boolean(me && me.perfil !== "CLIENTE" && canReadModule(me, "TAREFAS"));
   const canControl = Boolean(me && enabled && canWriteModule(me, "TAREFAS"));
   const [resumo, setResumo] = useState<ResumoDia | null>(null);
@@ -174,16 +176,19 @@ export function SessaoProvider({ children }: { children: React.ReactNode }) {
 
   // Fechar ou recarregar a aba com contador rodando: aviso nativo do navegador. Se a pessoa
   // cancelar e continuar na página, o aviso da própria página já estará aberto com as ações.
+  // Com o ponto ativo o aviso nativo aparece sempre, mesmo sem cronômetro (aí sem o aviso da página).
+  const cronometroRodando = enabled && bloqueiaSaida;
+  const avisarAoFechar = cronometroRodando || pontoAtivo;
   useEffect(() => {
-    if (!enabled || !bloqueiaSaida) return;
+    if (!avisarAoFechar) return;
     function onBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
       event.returnValue = "";
-      setAvisoSaida((current) => current ?? {});
+      if (cronometroRodando) setAvisoSaida((current) => current ?? {});
     }
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [bloqueiaSaida, enabled]);
+  }, [avisarAoFechar, cronometroRodando]);
 
   // Título da aba com prefixo enquanto houver contador rodando. O Next reescreve o título ao
   // navegar, então um observador reaplica o prefixo (sem duplicar) sempre que o título muda.

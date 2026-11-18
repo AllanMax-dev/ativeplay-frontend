@@ -30,3 +30,25 @@ export function clearStoredSession(): void {
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
   }
 }
+
+const LOGIN_NOTICE_KEY = "ativeplay.login-notice";
+
+/** Guarda um aviso para a tela de login mostrar uma vez (ex.: ponto encerrado). */
+export function saveLoginNotice(message: string): void {
+  try {
+    window.sessionStorage.setItem(LOGIN_NOTICE_KEY, message);
+  } catch {
+    // sem armazenamento, o login abre sem o aviso
+  }
+}
+
+/** Lê e apaga o aviso guardado para a tela de login. */
+export function takeLoginNotice(): string | null {
+  try {
+    const message = window.sessionStorage.getItem(LOGIN_NOTICE_KEY);
+    window.sessionStorage.removeItem(LOGIN_NOTICE_KEY);
+    return message;
+  } catch {
+    return null;
+  }
+}

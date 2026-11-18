@@ -5,6 +5,7 @@ import {
   BarChart3,
   BriefcaseBusiness,
   Building2,
+  CalendarClock,
   CheckSquare2,
   ClipboardList,
   FileText,
@@ -28,6 +29,7 @@ import {
   ContadorGeralSidebar,
   FaixaContadorRodando,
 } from "@/components/sessao/contador-geral";
+import { PontoProvider } from "@/components/sessao/ponto-provider";
 import { SessaoProvider, useSessao } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -75,6 +77,7 @@ const OPERATION_NAVIGATION: NavigationItem[] = [
   { label: "Documentos", icon: FileText, modulo: "DOCUMENTOS" },
   { label: "Relatórios", icon: BarChart3, modulo: "RELATORIOS" },
   { label: "Usuários", href: "/usuarios", icon: Users, modulo: "USUARIOS" },
+  { label: "Carga horária", href: "/carga-horaria", icon: CalendarClock, perfis: ["ADMIN", "GESTOR"] },
   {
     label: "Setores",
     href: "/setores",
@@ -138,8 +141,7 @@ function SidebarContent({
       ? [{ label: "Portal", href: "/portal", icon: House }]
       : OPERATION_NAVIGATION.filter(
           (item) =>
-            item.modulo &&
-            canReadModule(me, item.modulo) &&
+            (!item.modulo || canReadModule(me, item.modulo)) &&
             (!item.perfis || item.perfis.includes(me.perfil)),
         );
 
@@ -239,6 +241,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <PontoProvider>
     <SessaoProvider>
       <div className="min-h-dvh bg-background">
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:block">
@@ -305,5 +308,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     </SessaoProvider>
+    </PontoProvider>
   );
 }

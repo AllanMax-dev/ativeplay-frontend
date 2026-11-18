@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
+import { takeLoginNotice } from "@/lib/auth-storage";
 
 export function LoginForm() {
   const router = useRouter();
@@ -16,6 +17,15 @@ export function LoginForm() {
   const [senha, setSenha] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
+
+  // Aviso deixado ao mandar para o login (ex.: ponto encerrado por login em outro aparelho).
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const notice = takeLoginNotice();
+      if (notice) setError(new ApiError({ status: 401, detail: notice }));
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     if (status === "authenticated" && me) {

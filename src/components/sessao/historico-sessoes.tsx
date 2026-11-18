@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Clock3, History } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { api } from "@/lib/api";
-import { formatClock } from "@/lib/format";
+import {
+  formatClock,
+  formatDateInTimeZone,
+  formatTimeInTimeZone,
+} from "@/lib/format";
+import type { RegistroPonto } from "@/types/ponto";
 import {
   Dialog,
   DialogContent,
@@ -12,39 +18,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type SessaoAcesso = {
-  id: string;
-  inicio: string;
-  fim?: string | null;
-  duracaoMs: number;
-};
-
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-function formatarData(data: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Recife",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(data));
-}
-
-function formatarHora(data: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Recife",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).format(new Date(data));
-}
-
 export function HistoricoSessoes({ open, onOpenChange }: Props) {
-  const [sessoes, setSessoes] = useState<SessaoAcesso[]>([]);
+  const { me } = useAuth();
+  const timeZone = me?.escritorio.fusoHorario ?? "America/Sao_Paulo";
+  const [sessoes, setSessoes] = useState<RegistroPonto[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(false);
   const [agora, setAgora] = useState(() => Date.now());
@@ -59,7 +41,7 @@ export function HistoricoSessoes({ open, onOpenChange }: Props) {
       setErro(false);
 
       try {
-        const dados = await api.get<SessaoAcesso[]>("/sessoes-acesso");
+        const dados = await api.get<RegistroPonto[]>("/sessoes-acesso");
 
         if (ativo) setSessoes(dados);
       } catch (error) {
@@ -115,7 +97,7 @@ export function HistoricoSessoes({ open, onOpenChange }: Props) {
         ) : (
           <div className="space-y-3">
             {sessoes.map((sessao) => {
-              const emAndamento = !sessao.fim;
+              const emAndamento = !sessao.fim && !sessao.pendente;
 
               const inicioMs = new Date(sessao.inicio).getTime();
 
@@ -128,15 +110,18 @@ export function HistoricoSessoes({ open, onOpenChange }: Props) {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold">
-                        {formatarData(sessao.inicio)}
+                        {formatDateInTimeZone(sessao.inicio, timeZone)}
                       </p>
 
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Entrada: {formatarHora(sessao.inicio)}
+                        Entrada: {formatTimeInTimeZone(sessao.inicio, timeZone)}
                       </p>
 
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Saída: {sessao.fim ? formatarHora(sessao.fim) : "—"}
+                        Saída:{" "}
+                        {sessao.fim
+                          ? formatTimeInTimeZone(sessao.fim, timeZone)
+                          : "—"}
                       </p>
                     </div>
 
@@ -145,10 +130,21 @@ export function HistoricoSessoes({ open, onOpenChange }: Props) {
                         className={
                           emAndamento
                             ? "rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
-                            : "rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
+                            : sessao.pendente
+                              ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900"
+                              : "rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
+                        }
+                        title={
+                          sessao.pendente
+                            ? "Sem sinal do navegador por 15 min: conta até o último sinal até o gestor informar a saída"
+                            : undefined
                         }
                       >
-                        {emAndamento ? "Em andamento" : "Encerrada"}
+                        {emAndamento
+                          ? "Em andamento"
+                          : sessao.pendente
+                            ? "Pendente"
+                            : "Encerrada"}
                       </span>
 
                       <div className="flex items-center gap-1.5">

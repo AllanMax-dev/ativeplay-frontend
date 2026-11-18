@@ -23,12 +23,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ContadorGeralHeader, ContadorGeralSidebar, FaixaContadorRodando } from "@/components/sessao/contador-geral";
+import {
+  ContadorGeralHeader,
+  ContadorGeralSidebar,
+  FaixaContadorRodando,
+} from "@/components/sessao/contador-geral";
 import { SessaoProvider, useSessao } from "@/components/sessao/sessao-provider";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { canReadModule } from "@/lib/access-control";
 import type { Modulo, Perfil } from "@/types/api";
+import { ContadorSessaoSidebar } from "@/components/sessao/contador-sessao";
 
 interface NavigationItem {
   label: string;
@@ -41,17 +46,53 @@ interface NavigationItem {
 const OPERATION_NAVIGATION: NavigationItem[] = [
   { label: "Painel", href: "/inicio", icon: House, modulo: "PAINEL" },
   { label: "Empresas", href: "/empresas", icon: Building2, modulo: "EMPRESAS" },
-  { label: "Tarefas do dia", href: "/tarefas", icon: CheckSquare2, modulo: "TAREFAS" },
-  { label: "Checklist modelo", href: "/tarefas/checklist-modelo", icon: ListChecks, modulo: "TAREFAS", perfis: ["ADMIN", "GESTOR"] },
-  { label: "Padrões", href: "/tarefas/padroes", icon: ClipboardList, modulo: "TAREFAS" },
-  { label: "Rotinas", href: "/tarefas/rotinas", icon: Repeat2, modulo: "TAREFAS" },
+  {
+    label: "Tarefas do dia",
+    href: "/tarefas",
+    icon: CheckSquare2,
+    modulo: "TAREFAS",
+  },
+  {
+    label: "Checklist modelo",
+    href: "/tarefas/checklist-modelo",
+    icon: ListChecks,
+    modulo: "TAREFAS",
+    perfis: ["ADMIN", "GESTOR"],
+  },
+  {
+    label: "Padrões",
+    href: "/tarefas/padroes",
+    icon: ClipboardList,
+    modulo: "TAREFAS",
+  },
+  {
+    label: "Rotinas",
+    href: "/tarefas/rotinas",
+    icon: Repeat2,
+    modulo: "TAREFAS",
+  },
   { label: "CRM", icon: BriefcaseBusiness, modulo: "CRM" },
   { label: "Documentos", icon: FileText, modulo: "DOCUMENTOS" },
   { label: "Relatórios", icon: BarChart3, modulo: "RELATORIOS" },
   { label: "Usuários", href: "/usuarios", icon: Users, modulo: "USUARIOS" },
-  { label: "Setores", href: "/setores", icon: Layers3, modulo: "CONFIGURACOES" },
-  { label: "Permissões", href: "/permissoes", icon: ShieldCheck, modulo: "CONFIGURACOES" },
-  { label: "Auditoria", href: "/auditoria", icon: History, modulo: "AUDITORIA" },
+  {
+    label: "Setores",
+    href: "/setores",
+    icon: Layers3,
+    modulo: "CONFIGURACOES",
+  },
+  {
+    label: "Permissões",
+    href: "/permissoes",
+    icon: ShieldCheck,
+    modulo: "CONFIGURACOES",
+  },
+  {
+    label: "Auditoria",
+    href: "/auditoria",
+    icon: History,
+    modulo: "AUDITORIA",
+  },
 ];
 
 const PROFILE_LABELS: Record<Perfil, string> = {
@@ -68,8 +109,12 @@ function Brand({ officeName }: { officeName: string }) {
         AP
       </span>
       <div>
-        <p className="font-semibold tracking-[-0.02em] text-sidebar-foreground">Ative Play</p>
-        <p className="max-w-40 truncate text-xs text-muted-foreground">{officeName}</p>
+        <p className="font-semibold tracking-[-0.02em] text-sidebar-foreground">
+          Ative Play
+        </p>
+        <p className="max-w-40 truncate text-xs text-muted-foreground">
+          {officeName}
+        </p>
       </div>
     </div>
   );
@@ -103,11 +148,15 @@ function SidebarContent({
       <div className="px-4 pb-4 pt-5">
         <Brand officeName={me.escritorio.nome} />
       </div>
-      <div className="px-3 pb-4">
+      <div className="space-y-3 px-3 pb-4">
         <ContadorGeralSidebar />
+        <ContadorSessaoSidebar />
       </div>
       <Separator className="bg-sidebar-border" />
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4" aria-label="Menu principal">
+      <nav
+        className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4"
+        aria-label="Menu principal"
+      >
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = item.href === pathname;
@@ -121,7 +170,9 @@ function SidebarContent({
               >
                 <Icon className="size-4" aria-hidden="true" />
                 <span>{item.label}</span>
-                <span className="ml-auto text-xs text-muted-foreground">Em breve</span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  Em breve
+                </span>
               </div>
             );
           }
@@ -138,15 +189,22 @@ function SidebarContent({
                   : "text-sidebar-foreground/75 hover:bg-sidebar-accent/55 hover:text-sidebar-foreground"
               }`}
             >
-              <Icon className={`size-4 ${active ? "text-sidebar-primary" : ""}`} aria-hidden="true" />
+              <Icon
+                className={`size-4 ${active ? "text-sidebar-primary" : ""}`}
+                aria-hidden="true"
+              />
               {item.label}
             </Link>
           );
         })}
       </nav>
       <div className="border-t border-sidebar-border px-5 py-4">
-        <p className="truncate text-xs font-medium text-sidebar-foreground">{me.nome}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{PROFILE_LABELS[me.perfil]}</p>
+        <p className="truncate text-xs font-medium text-sidebar-foreground">
+          {me.nome}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {PROFILE_LABELS[me.perfil]}
+        </p>
         <Button
           type="button"
           variant="ghost"
@@ -182,59 +240,70 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SessaoProvider>
-    <div className="min-h-dvh bg-background">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:block">
-        <SidebarContent onLogout={() => void handleLogout()} loggingOut={loggingOut} />
-      </aside>
-
-      {/* Sempre montado para poder animar a entrada e a saída; fechado, fica inerte e invisível. */}
-      <div
-        className={`fixed inset-0 z-40 transition-[translate,opacity,visibility] ease-(--ease-drawer) motion-reduce:translate-x-0 lg:hidden ${
-          mobileMenuOpen ? "visible duration-300" : "invisible -translate-x-full duration-200 motion-reduce:opacity-0"
-        }`}
-        inert={!mobileMenuOpen}
-      >
-        <aside className="relative h-full w-full bg-sidebar text-sidebar-foreground">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-3 top-4 text-sidebar-foreground hover:bg-sidebar-accent"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="Fechar menu"
-          >
-            <X aria-hidden="true" />
-          </Button>
+      <div className="min-h-dvh bg-background">
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:block">
           <SidebarContent
-            onNavigate={() => setMobileMenuOpen(false)}
             onLogout={() => void handleLogout()}
             loggingOut={loggingOut}
           />
         </aside>
-      </div>
 
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:hidden">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setMobileMenuOpen(true)}
-            aria-label="Abrir menu"
-          >
-            <Menu aria-hidden="true" />
-          </Button>
-          <div className="min-w-0 flex-1 lg:hidden">
-            <p className="truncate text-sm font-medium">{me?.escritorio.nome}</p>
-            <p className="truncate text-xs text-muted-foreground">{me?.email}</p>
-          </div>
-          <ContadorGeralHeader />
-        </header>
-        <FaixaContadorRodando />
-        <main className="mx-auto w-full max-w-[100rem] px-4 py-7 sm:px-6 lg:px-10 lg:pb-12 lg:pt-9">{children}</main>
+        {/* Sempre montado para poder animar a entrada e a saída; fechado, fica inerte e invisível. */}
+        <div
+          className={`fixed inset-0 z-40 transition-[translate,opacity,visibility] ease-(--ease-drawer) motion-reduce:translate-x-0 lg:hidden ${
+            mobileMenuOpen
+              ? "visible duration-300"
+              : "invisible -translate-x-full duration-200 motion-reduce:opacity-0"
+          }`}
+          inert={!mobileMenuOpen}
+        >
+          <aside className="relative h-full w-full bg-sidebar text-sidebar-foreground">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-3 top-4 text-sidebar-foreground hover:bg-sidebar-accent"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Fechar menu"
+            >
+              <X aria-hidden="true" />
+            </Button>
+            <SidebarContent
+              onNavigate={() => setMobileMenuOpen(false)}
+              onLogout={() => void handleLogout()}
+              loggingOut={loggingOut}
+            />
+          </aside>
+        </div>
+
+        <div className="lg:pl-64">
+          <header className="sticky top-0 z-20 flex h-12 items-center gap-3 border-b bg-background px-4 sm:px-6 lg:hidden">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Abrir menu"
+            >
+              <Menu aria-hidden="true" />
+            </Button>
+            <div className="min-w-0 flex-1 lg:hidden">
+              <p className="truncate text-sm font-medium">
+                {me?.escritorio.nome}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {me?.email}
+              </p>
+            </div>
+            <ContadorGeralHeader />
+          </header>
+          <FaixaContadorRodando />
+          <main className="mx-auto w-full max-w-[100rem] px-4 py-7 sm:px-6 lg:px-10 lg:pb-12 lg:pt-9">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
     </SessaoProvider>
   );
 }

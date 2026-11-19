@@ -17,6 +17,9 @@ export const AUTH_EXPIRED_EVENT = "ativeplay:auth-expired";
 
 export const PONTO_ENCERRADO_MESSAGE = "Seu ponto foi encerrado. Entre novamente.";
 
+// O Render gratuito leva ~1 min para acordar; abaixo disso a primeira chamada falharia.
+const REQUEST_TIMEOUT_MS = 90_000;
+
 const STATUS_MESSAGES: Record<number, string> = {
   400: "Não foi possível processar os dados enviados.",
   401: "Sua sessão expirou. Entre novamente para continuar.",
@@ -106,6 +109,7 @@ async function renewSession(): Promise<SessaoResponse> {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify({ refreshToken: session.refreshToken }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
     .then(async (response) => {
       if (!response.ok) throw new ApiError(await readProblem(response));
@@ -153,12 +157,15 @@ async function request<TResponse, TBody = never>(
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-  } catch {
+  } catch (cause) {
     throw new ApiError({
       status: 0,
       detail:
-        "Não foi possível conectar à API. Confira se o backend está disponível.",
+        cause instanceof DOMException && cause.name === "TimeoutError"
+          ? "O servidor não respondeu. Tente de novo em instantes."
+          : "Não foi possível conectar à API. Confira se o backend está disponível.",
     });
   }
 

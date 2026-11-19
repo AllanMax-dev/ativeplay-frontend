@@ -1,72 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Clock3 } from "lucide-react";
-import { useAuth } from "@/components/auth/auth-provider";
-import { api } from "@/lib/api";
+import { usePonto } from "@/components/sessao/ponto-provider";
+import { useNow } from "@/components/sessao/sessao-provider";
 import { formatClock } from "@/lib/format";
 import { History } from "lucide-react";
 import { HistoricoSessoes } from "@/components/sessao/historico-sessoes";
 
-type SessaoAcesso = {
-  id: string;
-  inicio: string;
-  fim: string | null;
-  duracaoMs: number;
-};
-
 export function ContadorSessaoSidebar() {
-  const { status, me } = useAuth();
+  const { enabled, registro, carregado, erro } = usePonto();
   const [historicoAberto, setHistoricoAberto] = useState(false);
+  const agora = useNow();
 
-  const [sessao, setSessao] = useState<SessaoAcesso | null>(null);
-  const [agora, setAgora] = useState(() => Date.now());
-  const [erro, setErro] = useState(false);
+  // Ponto só para funcionários: para CLIENTE o contador não existe.
+  if (!enabled) return null;
 
-  useEffect(() => {
-    let ativo = true;
-
-    if (status !== "authenticated" || !me) {
-      return;
-    }
-
-    async function carregarSessao() {
-      try {
-        const dados = await api.get<SessaoAcesso | undefined>(
-          "/sessoes-acesso/atual",
-        );
-
-        if (!ativo) return;
-
-        setSessao(dados ?? null);
-        setAgora(Date.now());
-        setErro(false);
-      } catch (error) {
-        if (!ativo) return;
-
-        console.error("Erro ao carregar sessão:", error);
-        setErro(true);
-      }
-    }
-
-    void carregarSessao();
-
-    return () => {
-      ativo = false;
-    };
-  }, [status, me]);
-
-  useEffect(() => {
-    const intervalo = window.setInterval(() => {
-      setAgora(Date.now());
-    }, 1000);
-
-    return () => window.clearInterval(intervalo);
-  }, []);
-
-  if (status !== "authenticated") return null;
-
-  const inicioMs = sessao ? new Date(sessao.inicio).getTime() : null;
+  const inicioMs = registro ? new Date(registro.inicio).getTime() : null;
 
   const duracaoMs =
     inicioMs !== null && Number.isFinite(inicioMs)
@@ -97,7 +47,7 @@ export function ContadorSessaoSidebar() {
           />
         </div>
 
-        {sessao ? (
+        {registro ? (
           <>
             <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] tabular-nums">
               {formatClock(duracaoMs)}
@@ -111,7 +61,9 @@ export function ContadorSessaoSidebar() {
           <p className="mt-2 text-xs text-muted-foreground">
             {erro
               ? "Não foi possível carregar a sessão"
-              : "Carregando sessão..."}
+              : carregado
+                ? "Sem registro ativo"
+                : "Carregando sessão..."}
           </p>
         )}
       </button>

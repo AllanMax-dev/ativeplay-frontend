@@ -66,3 +66,52 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return false;
   }
 }
+
+/** Data (dd/mm/aaaa) de um instante, no fuso informado. */
+export function formatDateInTimeZone(instant: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("pt-BR", { timeZone, day: "2-digit", month: "2-digit", year: "numeric" }).format(
+    new Date(instant),
+  );
+}
+
+/** Hora (hh:mm:ss) de um instante, no fuso informado. */
+export function formatTimeInTimeZone(instant: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(instant));
+}
+
+/** Data (AAAA-MM-DD) e hora (hh:mm) de um instante no fuso informado, para campos de formulário. */
+export function instantToZonedParts(instant: string, timeZone: string): { data: string; hora: string } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(instant));
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "00";
+  return { data: `${get("year")}-${get("month")}-${get("day")}`, hora: `${get("hour")}:${get("minute")}` };
+}
+
+/** Converte data (AAAA-MM-DD) e hora (hh:mm) do relógio do fuso informado no instante ISO (UTC). */
+export function zonedPartsToInstant(data: string, hora: string, timeZone: string): string {
+  const [ano, mes, dia] = data.split("-").map(Number);
+  const [h, min] = hora.split(":").map(Number);
+  const relogio = Date.UTC(ano, mes - 1, dia, h, min);
+  const deslocamento = (utc: number) => {
+    const { data: d, hora: t } = instantToZonedParts(new Date(utc).toISOString(), timeZone);
+    const [a2, m2, d2] = d.split("-").map(Number);
+    const [h2, mi2] = t.split(":").map(Number);
+    return Date.UTC(a2, m2 - 1, d2, h2, mi2) - utc;
+  };
+  let utc = relogio - deslocamento(relogio);
+  utc = relogio - deslocamento(utc);
+  return new Date(utc).toISOString();
+}
